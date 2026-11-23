@@ -1,0 +1,13 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'ru.devops.interview'
+    compileSdk 37
+    defaultConfig {
+        applicationId 'ru.devops.interview'
+        minSdk 23
+        targetSdk 35
+        versionCode 2
+        versionName '1.1'
+    }
+}
