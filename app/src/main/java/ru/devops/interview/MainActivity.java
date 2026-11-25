@@ -83,7 +83,7 @@ public class MainActivity extends Activity {
     void leaveQuestion(){if(questionOrigin.equals("browse"))browse();else home();}
     void showQuestion(){page="question";Question q=deck.get(index);init("Тренировка",(index+1)+" / "+deck.size()+"  ·  "+q.category);
         addButton(body,questionOrigin.equals("browse")?"← К вопросам":"← На главную",false,()->leaveQuestion());
-        LinearLayout card=column();card.setPadding(d(20),d(22),d(20),d(22));card.setBackground(shape(PANEL,20));card.addView(text(q.id+"  ·  "+q.level+"  ·  "+q.type,12,ACCENT,true));space(card,18);card.addView(text(q.text,21,TEXT,true));space(card,18);card.addView(text("Напиши ответ или сформулируй его вслух, затем оцени себя.",14,MUTED,false));body.addView(card);space(body,16);
+        LinearLayout card=column();card.setPadding(d(20),d(22),d(20),d(22));card.setBackground(shape(PANEL,20));card.addView(text(q.id+"  ·  "+q.level+"  ·  "+q.type,12,ACCENT,true));space(card,18);card.addView(text(q.text,21,TEXT,true));space(card,18);card.addView(text("Напиши ответ или ответь вслух. Если не знаешь, открой эталонный ответ.",14,MUTED,false));body.addView(card);space(body,16);
         body.addView(text("ТВОЙ ОТВЕТ",12,ACCENT,true));space(body,8);
         EditText draft=new EditText(this);draft.setTextColor(TEXT);draft.setHintTextColor(MUTED);draft.setTextSize(16);draft.setGravity(Gravity.TOP|Gravity.START);draft.setPadding(d(16),d(14),d(16),d(14));draft.setBackground(shape(PANEL,14));draft.setHint("Напиши свой ответ здесь");draft.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE|android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);draft.setMinLines(4);draft.setText(prefs.getString("draft_"+q.id,""));body.addView(draft,new LinearLayout.LayoutParams(-1,-2));space(body,16);
         draft.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){prefs.edit().putString("draft_"+q.id,s.toString()).apply();}public void afterTextChanged(Editable e){}});
@@ -92,12 +92,12 @@ public class MainActivity extends Activity {
             TextView analysis=text("",14,TEXT,false);analysis.setPadding(d(16),d(14),d(16),d(14));analysis.setBackground(shape(PANEL,14));analysis.setVisibility(View.GONE);
             addButton(body,"Сравнить с примером",false,()->{analysis.setText(analyzer.compare(answer,draft.getText().toString()));analysis.setVisibility(View.VISIBLE);});
             body.addView(analysis);space(body,10);
-            TextView toggle=button("Показать ответ  ↓",true,()->{});
+            TextView toggle=button("Не знаю ответ — показать  ↓",true,()->{});
             body.addView(toggle,new LinearLayout.LayoutParams(-1,-2));space(body,10);
             LinearLayout answerCard=column();answerCard.setPadding(d(20),d(18),d(20),d(18));answerCard.setBackground(shape(PANEL,20));
             answerCard.addView(text("ОТВЕТ",12,ACCENT,true));space(answerCard,10);TextView answerText=text(answer,16,TEXT,false);answerText.setTextIsSelectable(true);answerText.setLineSpacing(d(3),1f);answerCard.addView(answerText);answerCard.setVisibility(View.GONE);body.addView(answerCard);space(body,10);
-            toggle.setOnClickListener(v->{boolean visible=answerCard.getVisibility()==View.VISIBLE;answerCard.setVisibility(visible?View.GONE:View.VISIBLE);toggle.setText(visible?"Показать ответ  ↓":"Скрыть ответ  ↑");});
-        }else{body.addView(text("Для этого вопроса ответ не найден.",14,MUTED,false));space(body,10);}
+            toggle.setOnClickListener(v->{boolean visible=answerCard.getVisibility()==View.VISIBLE;answerCard.setVisibility(visible?View.GONE:View.VISIBLE);toggle.setText(visible?"Не знаю ответ — показать  ↓":"Скрыть ответ  ↑");if(!visible){((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(draft.getWindowToken(),0);draft.clearFocus();answerCard.post(()->{android.graphics.Rect rect=new android.graphics.Rect(0,0,answerCard.getWidth(),Math.min(answerCard.getHeight(),d(200)));answerCard.requestRectangleOnScreen(rect,false);});}});
+        }else{addButton(body,"Не знаю ответ",true,()->Toast.makeText(this,"Для этого вопроса эталонный ответ пока не добавлен.",Toast.LENGTH_LONG).show());body.addView(text("Для этого вопроса ответ не найден.",14,MUTED,false));space(body,10);}
         boolean fav=prefs.getBoolean("fav_"+q.id,false), known=prefs.getBoolean("known_"+q.id,false);
         addButton(body,fav?"★  В избранном":"☆  В избранное",false,()->{prefs.edit().putBoolean("fav_"+q.id,!fav).apply();showQuestion();});
         addButton(body,known?"✓  Изучено — снять отметку":"✓  Отметить изученным",true,()->{prefs.edit().putBoolean("known_"+q.id,!known).apply();showQuestion();});
