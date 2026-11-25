@@ -2,7 +2,7 @@ plugins { id 'com.android.application' }
 
 android {
     namespace 'ru.devops.interview'
-    compileSdk 37
+    compileSdk 35
     defaultConfig {
         applicationId 'ru.devops.interview'
         minSdk 23
