@@ -26,7 +26,7 @@ public class MainActivity extends Activity {
     final HashMap<String,String> answers=new HashMap<>();
     AnswerAnalyzer analyzer; SharedPreferences prefs; LinearLayout root, body; String category="Все темы", level="Все уровни", query=""; boolean favorites=false; int index=0; String page="home", questionOrigin="home";
     int d(float n){return (int)(n*getResources().getDisplayMetrics().density+0.5f);}
-    @Override public void onCreate(Bundle b){super.onCreate(b); getWindow().setStatusBarColor(BG); getWindow().setNavigationBarColor(BG); prefs=getSharedPreferences("progress",MODE_PRIVATE); load(); loadAnswers(); analyzer=new AnswerAnalyzer(answers.values()); home();}
+    @Override public void onCreate(Bundle b){super.onCreate(b); getWindow().setStatusBarColor(BG); getWindow().setNavigationBarColor(BG); prefs=getSharedPreferences("progress",MODE_PRIVATE); if(b!=null)speechQuestionId=b.getString("speechQuestionId"); load(); loadAnswers(); analyzer=new AnswerAnalyzer(answers.values()); home();}
     void load(){
         Pattern heading=Pattern.compile("^## (.+) \\((\\d+)\\)$");
         Pattern item=Pattern.compile("^- \\*\\*(Q-\\d+)\\*\\* · ([^·]+) · ([^:]+): (.+)$");
@@ -64,6 +64,8 @@ public class MainActivity extends Activity {
         addButton(body,"Начать тренировку  →",true,()->{category="Все темы";level="Все уровни";query="";favorites=false;startDeck(true);});
         addButton(body,"Категории и поиск",false,()->{category="Все темы";level="Все уровни";query="";favorites=false;browse();});
         addButton(body,"Избранное  ·  "+starred(),false,()->{category="Все темы";level="Все уровни";query="";favorites=true;browse();});
+        addButton(body,"Повторить слабые вопросы  ·  "+weakQuestions().size(),true,()->repeatWeak());
+        addButton(body,"История AI-проверок",false,()->showHistory());
         addButton(body,"Настройки AI · OpenRouter",false,()->configureAI(null));
         space(body,14);body.addView(text("Как это работает",18,TEXT,true));space(body,8);body.addView(text("Напиши ответ или ответь вслух, открой пример и оцени себя. Прогресс и избранное сохраняются на устройстве. Ответы Q-00001—Q-00080 подробные; остальные — краткие опорные материалы, которые могут требовать уточнения.",14,MUTED,false));space(body,24);
     }
@@ -81,8 +83,64 @@ public class MainActivity extends Activity {
     }
     void setSpinner(Spinner spinner,ArrayList<String> values,int selected){ArrayAdapter<String> adapter=new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,values){@Override public View getView(int p,View c,android.view.ViewGroup parent){TextView t=(TextView)super.getView(p,c,parent);t.setTextColor(TEXT);t.setPadding(d(14),d(12),d(14),d(12));return t;}};adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);spinner.setAdapter(adapter);spinner.setBackground(shape(PANEL,12));spinner.setSelection(selected);}
     void startDeck(boolean shuffle){questionOrigin=page;deck.clear();deck.addAll(filtered());if(deck.isEmpty()){Toast.makeText(this,"Нет вопросов для тренировки",Toast.LENGTH_SHORT).show();return;}if(shuffle)Collections.shuffle(deck);index=0;showQuestion();}
-    void leaveQuestion(){if(questionOrigin.equals("browse"))browse();else home();}
+    void leaveQuestion(){if(questionOrigin.equals("browse"))browse();else if(questionOrigin.equals("history"))showHistory();else home();}
 
+
+    private static final int SPEECH_REQUEST=742;
+    private String speechQuestionId;
+    private EditText activeDraft;
+    private final Set<String> pendingChecks=new HashSet<>();
+    void voiceInput(Question q){
+        android.content.Intent intent=new android.content.Intent(android.speech.RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE_MODEL,android.speech.RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE,"ru-RU");
+        intent.putExtra(android.speech.RecognizerIntent.EXTRA_PROMPT,"Продиктуй ответ на вопрос");
+        intent.putExtra(android.speech.RecognizerIntent.EXTRA_MAX_RESULTS,1);
+        speechQuestionId=q.id;
+        try{startActivityForResult(intent,SPEECH_REQUEST);}catch(android.content.ActivityNotFoundException e){speechQuestionId=null;Toast.makeText(this,"На устройстве нет сервиса распознавания речи. Используй клавиатуру.",Toast.LENGTH_LONG).show();}
+    }
+    @Override protected void onActivityResult(int request,int result,android.content.Intent data){
+        super.onActivityResult(request,result,data);
+        if(request!=SPEECH_REQUEST)return;
+        String id=speechQuestionId;speechQuestionId=null;
+        if(result!=RESULT_OK||data==null||id==null)return;
+        ArrayList<String> words=data.getStringArrayListExtra(android.speech.RecognizerIntent.EXTRA_RESULTS);
+        if(words==null||words.isEmpty()||words.get(0).trim().isEmpty())return;
+        String existing=prefs.getString("draft_"+id,"");
+        String combined=existing.trim().isEmpty()?words.get(0):existing+" "+words.get(0);
+        prefs.edit().putString("draft_"+id,combined).apply();
+        if(page.equals("question")&&!deck.isEmpty()&&deck.get(index).id.equals(id)&&activeDraft!=null){activeDraft.setText(combined);activeDraft.setSelection(combined.length());}
+        else Toast.makeText(this,"Голосовой ответ сохранён в черновик",Toast.LENGTH_SHORT).show();
+    }
+    @Override protected void onSaveInstanceState(Bundle out){super.onSaveInstanceState(out);out.putString("speechQuestionId",speechQuestionId);}
+    ArrayList<Question> weakQuestions(){
+        ArrayList<Question> list=new ArrayList<>();
+        for(Question q:all)if(PracticeHistory.isWeak(prefs,q.id))list.add(q);
+        Collections.sort(list,(a,b)->Integer.compare(PracticeHistory.priority(prefs,a.id),PracticeHistory.priority(prefs,b.id)));
+        return list;
+    }
+    void repeatWeak(){
+        ArrayList<Question> list=weakQuestions();
+        if(list.isEmpty()){Toast.makeText(this,"Пока нет слабых вопросов. Пройди AI-проверку или открой ответ через «Не знаю».",Toast.LENGTH_LONG).show();return;}
+        questionOrigin="home";deck.clear();deck.addAll(list);index=0;showQuestion();
+    }
+    void showHistory(){
+        page="history";init("История AI-проверок","Последние 200 успешных проверок");
+        addButton(body,"← На главную",false,()->home());
+        ArrayList<PracticeHistory.Entry> entries=PracticeHistory.entries(prefs);
+        if(entries.isEmpty()){body.addView(text("Пока нет оценок. Ответь на вопрос и запусти AI-проверку.",15,MUTED,false));return;}
+        int scored=0,total=0;for(PracticeHistory.Entry e:entries)if(e.score>=0){scored++;total+=e.score;}
+        body.addView(text("Проверок: "+entries.size()+"  ·  Средний балл: "+(scored==0?"нет оценки":String.format(Locale.ROOT,"%.1f/10",(double)total/scored)),15,ACCENT,true));space(body,12);
+        for(PracticeHistory.Entry e:entries){
+            LinearLayout item=column();item.setPadding(d(16),d(14),d(16),d(14));item.setBackground(shape(PANEL,14));
+            item.addView(text((e.score<0?"Без балла":e.score+"/10")+"  ·  "+new java.text.SimpleDateFormat("dd.MM.yyyy HH:mm",Locale.getDefault()).format(new Date(e.time)),14,ACCENT,true));space(item,8);
+            item.addView(text(e.question,15,TEXT,true));space(item,6);
+            addButton(item,"Подробнее",false,()->new android.app.AlertDialog.Builder(this).setTitle(e.id+" · "+(e.score<0?"Без балла":e.score+"/10")).setMessage(e.question+"\n\nТвой ответ:\n"+e.answer+"\n\n"+e.feedback).setPositiveButton("Закрыть",null).show());
+            addButton(item,"Повторить вопрос",false,()->{for(Question q:all)if(q.id.equals(e.id)){questionOrigin="history";deck.clear();deck.add(q);index=0;showQuestion();return;}});
+            body.addView(item);space(body,10);
+        }
+        addButton(body,"Очистить историю и список слабых вопросов",false,()->new android.app.AlertDialog.Builder(this).setTitle("Очистить историю?").setMessage("Оценки и отметки «Не знаю» будут удалены. Черновики и избранное останутся.").setNegativeButton("Отмена",null).setPositiveButton("Очистить",(dialog,which)->{PracticeHistory.clear(prefs);showHistory();}).show());
+    }
     void configureAI(Runnable after){
         EditText key=new EditText(this);key.setSingleLine(true);key.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
         key.setHint("sk-or-v1-...");key.setText(OpenRouterClient.loadKey(this));
@@ -97,17 +155,20 @@ public class MainActivity extends Activity {
         if(response.isEmpty()){Toast.makeText(this,"Сначала напиши ответ",Toast.LENGTH_SHORT).show();return;}
         String key=OpenRouterClient.loadKey(this);
         if(key.isEmpty()){configureAI(()->checkAI(q,draft,reference,result,trigger));return;}
+        if(!pendingChecks.add(q.id)){Toast.makeText(this,"Этот вопрос уже проверяется",Toast.LENGTH_SHORT).show();return;}
         trigger.setEnabled(false);trigger.setText("Проверяем через LLM…");result.setVisibility(View.VISIBLE);result.setText("Запрос отправлен. Ожидаем оценку.");
-        new Thread(()->{String message;try{message=OpenRouterClient.evaluate(key,q.text,q.level,response,reference);}catch(Exception e){message="Не удалось выполнить AI-проверку: "+e.getMessage()+"\nМожно воспользоваться локальным сравнением.";}
-            final String output=message;runOnUiThread(()->{if(isFinishing()||isDestroyed())return;trigger.setEnabled(true);trigger.setText("Проверить ответ через AI");result.setText(output);result.post(()->result.requestRectangleOnScreen(new android.graphics.Rect(0,0,result.getWidth(),Math.min(result.getHeight(),d(200))),false));});
+        new Thread(()->{String message;try{message=OpenRouterClient.evaluate(key,q.text,q.level,response,reference);PracticeHistory.record(prefs,q.id,q.text,response,message);}catch(Exception e){message="Не удалось выполнить AI-проверку: "+e.getMessage()+"\nМожно воспользоваться локальным сравнением.";}
+            final String output=message;runOnUiThread(()->{pendingChecks.remove(q.id);if(isFinishing()||isDestroyed())return;trigger.setEnabled(true);trigger.setText("Проверить ответ через AI");result.setText(output);result.post(()->result.requestRectangleOnScreen(new android.graphics.Rect(0,0,result.getWidth(),Math.min(result.getHeight(),d(200))),false));});
         }).start();
     }
     void showQuestion(){page="question";Question q=deck.get(index);init("Тренировка",(index+1)+" / "+deck.size()+"  ·  "+q.category);
-        addButton(body,questionOrigin.equals("browse")?"← К вопросам":"← На главную",false,()->leaveQuestion());
+        addButton(body,questionOrigin.equals("browse")?"← К вопросам":questionOrigin.equals("history")?"← К истории":"← На главную",false,()->leaveQuestion());
         LinearLayout card=column();card.setPadding(d(20),d(22),d(20),d(22));card.setBackground(shape(PANEL,20));card.addView(text(q.id+"  ·  "+q.level+"  ·  "+q.type,12,ACCENT,true));space(card,18);card.addView(text(q.text,21,TEXT,true));space(card,18);card.addView(text("Напиши ответ или ответь вслух. Если не знаешь, открой эталонный ответ.",14,MUTED,false));body.addView(card);space(body,16);
         body.addView(text("ТВОЙ ОТВЕТ",12,ACCENT,true));space(body,8);
         EditText draft=new EditText(this);draft.setTextColor(TEXT);draft.setHintTextColor(MUTED);draft.setTextSize(16);draft.setGravity(Gravity.TOP|Gravity.START);draft.setPadding(d(16),d(14),d(16),d(14));draft.setBackground(shape(PANEL,14));draft.setHint("Напиши свой ответ здесь");draft.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE|android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);draft.setMinLines(4);draft.setText(prefs.getString("draft_"+q.id,""));body.addView(draft,new LinearLayout.LayoutParams(-1,-2));space(body,16);
         draft.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){prefs.edit().putString("draft_"+q.id,s.toString()).apply();}public void afterTextChanged(Editable e){}});
+        activeDraft=draft;
+        addButton(body,"🎙 Ответить голосом",false,()->voiceInput(q));
         String answer=answers.get(q.id);
         TextView aiResult=text("",15,TEXT,false);aiResult.setPadding(d(16),d(14),d(16),d(14));aiResult.setBackground(shape(PANEL,14));aiResult.setTextIsSelectable(true);aiResult.setVisibility(View.GONE);
         TextView aiButton=button("Проверить ответ через AI",true,()->{});aiButton.setOnClickListener(v->checkAI(q,draft,answer,aiResult,aiButton));body.addView(aiButton,new LinearLayout.LayoutParams(-1,-2));space(body,10);body.addView(aiResult);space(body,10);
@@ -119,12 +180,12 @@ public class MainActivity extends Activity {
             body.addView(toggle,new LinearLayout.LayoutParams(-1,-2));space(body,10);
             LinearLayout answerCard=column();answerCard.setPadding(d(20),d(18),d(20),d(18));answerCard.setBackground(shape(PANEL,20));
             answerCard.addView(text("ОТВЕТ",12,ACCENT,true));space(answerCard,10);TextView answerText=text(answer,16,TEXT,false);answerText.setTextIsSelectable(true);answerText.setLineSpacing(d(3),1f);answerCard.addView(answerText);answerCard.setVisibility(View.GONE);body.addView(answerCard);space(body,10);
-            toggle.setOnClickListener(v->{boolean visible=answerCard.getVisibility()==View.VISIBLE;answerCard.setVisibility(visible?View.GONE:View.VISIBLE);toggle.setText(visible?"Не знаю ответ — показать  ↓":"Скрыть ответ  ↑");if(!visible){((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(draft.getWindowToken(),0);draft.clearFocus();answerCard.post(()->{android.graphics.Rect rect=new android.graphics.Rect(0,0,answerCard.getWidth(),Math.min(answerCard.getHeight(),d(200)));answerCard.requestRectangleOnScreen(rect,false);});}});
-        }else{addButton(body,"Не знаю ответ",true,()->Toast.makeText(this,"Для этого вопроса эталонный ответ пока не добавлен.",Toast.LENGTH_LONG).show());body.addView(text("Для этого вопроса ответ не найден.",14,MUTED,false));space(body,10);}
+            toggle.setOnClickListener(v->{boolean visible=answerCard.getVisibility()==View.VISIBLE;answerCard.setVisibility(visible?View.GONE:View.VISIBLE);toggle.setText(visible?"Не знаю ответ — показать  ↓":"Скрыть ответ  ↑");if(!visible){PracticeHistory.markUnknown(prefs,q.id);((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(draft.getWindowToken(),0);draft.clearFocus();answerCard.post(()->{android.graphics.Rect rect=new android.graphics.Rect(0,0,answerCard.getWidth(),Math.min(answerCard.getHeight(),d(200)));answerCard.requestRectangleOnScreen(rect,false);});}});
+        }else{addButton(body,"Не знаю ответ",true,()->{PracticeHistory.markUnknown(prefs,q.id);Toast.makeText(this,"Для этого вопроса эталонный ответ пока не добавлен.",Toast.LENGTH_LONG).show();});body.addView(text("Для этого вопроса ответ не найден.",14,MUTED,false));space(body,10);}
         boolean fav=prefs.getBoolean("fav_"+q.id,false), known=prefs.getBoolean("known_"+q.id,false);
         addButton(body,fav?"★  В избранном":"☆  В избранное",false,()->{prefs.edit().putBoolean("fav_"+q.id,!fav).apply();showQuestion();});
         addButton(body,known?"✓  Изучено — снять отметку":"✓  Отметить изученным",true,()->{prefs.edit().putBoolean("known_"+q.id,!known).apply();showQuestion();});
         LinearLayout nav=new LinearLayout(this);TextView prev=button("← Назад",false,()->{if(index>0){index--;showQuestion();}});TextView next=button(index==deck.size()-1?"Завершить":"Далее →",false,()->{if(index+1<deck.size()){index++;showQuestion();}else leaveQuestion();});nav.addView(prev,new LinearLayout.LayoutParams(0,-2,1));View gap=new View(this);nav.addView(gap,new LinearLayout.LayoutParams(d(10),1));nav.addView(next,new LinearLayout.LayoutParams(0,-2,1));body.addView(nav);space(body,20);
     }
-    @Override public void onBackPressed(){if(page.equals("question")){leaveQuestion();}else if(page.equals("browse")){home();}else super.onBackPressed();}
+    @Override public void onBackPressed(){if(page.equals("question")){leaveQuestion();}else if(page.equals("browse")||page.equals("history")){home();}else super.onBackPressed();}
 }
