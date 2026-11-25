@@ -64,6 +64,7 @@ public class MainActivity extends Activity {
         addButton(body,"Начать тренировку  →",true,()->{category="Все темы";level="Все уровни";query="";favorites=false;startDeck(true);});
         addButton(body,"Категории и поиск",false,()->{category="Все темы";level="Все уровни";query="";favorites=false;browse();});
         addButton(body,"Избранное  ·  "+starred(),false,()->{category="Все темы";level="Все уровни";query="";favorites=true;browse();});
+        addButton(body,"Настройки AI · OpenRouter",false,()->configureAI(null));
         space(body,14);body.addView(text("Как это работает",18,TEXT,true));space(body,8);body.addView(text("Напиши ответ или ответь вслух, открой пример и оцени себя. Прогресс и избранное сохраняются на устройстве. Ответы Q-00001—Q-00080 подробные; остальные — краткие опорные материалы, которые могут требовать уточнения.",14,MUTED,false));space(body,24);
     }
     ArrayList<Question> filtered(){ArrayList<Question> list=new ArrayList<>();String term=query.trim().toLowerCase(Locale.ROOT);for(Question q:all)if((category.equals("Все темы")||q.category.equals(category))&&(level.equals("Все уровни")||q.level.equals(level))&&(!favorites||prefs.getBoolean("fav_"+q.id,false))&&(term.isEmpty()||(q.text+" "+q.id+" "+q.category).toLowerCase(Locale.ROOT).contains(term)))list.add(q);return list;}
@@ -81,6 +82,26 @@ public class MainActivity extends Activity {
     void setSpinner(Spinner spinner,ArrayList<String> values,int selected){ArrayAdapter<String> adapter=new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,values){@Override public View getView(int p,View c,android.view.ViewGroup parent){TextView t=(TextView)super.getView(p,c,parent);t.setTextColor(TEXT);t.setPadding(d(14),d(12),d(14),d(12));return t;}};adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);spinner.setAdapter(adapter);spinner.setBackground(shape(PANEL,12));spinner.setSelection(selected);}
     void startDeck(boolean shuffle){questionOrigin=page;deck.clear();deck.addAll(filtered());if(deck.isEmpty()){Toast.makeText(this,"Нет вопросов для тренировки",Toast.LENGTH_SHORT).show();return;}if(shuffle)Collections.shuffle(deck);index=0;showQuestion();}
     void leaveQuestion(){if(questionOrigin.equals("browse"))browse();else home();}
+
+    void configureAI(Runnable after){
+        EditText key=new EditText(this);key.setSingleLine(true);key.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        key.setHint("sk-or-v1-...");key.setText(OpenRouterClient.loadKey(this));
+        new android.app.AlertDialog.Builder(this).setTitle("OpenRouter — API-ключ")
+            .setMessage("Создай ключ на openrouter.ai/keys. Используется только openrouter/free. При проверке вопрос, ответ и пример отправляются в OpenRouter и выбранному провайдеру. Не вводи конфиденциальные данные.")
+            .setView(key).setNegativeButton("Отмена",null)
+            .setNeutralButton("Удалить ключ",(dialog,which)->{OpenRouterClient.clearKey(this);Toast.makeText(this,"Ключ удалён",Toast.LENGTH_SHORT).show();})
+            .setPositiveButton("Сохранить",(dialog,which)->{String value=key.getText().toString().trim();if(value.isEmpty()){Toast.makeText(this,"Введи API-ключ",Toast.LENGTH_SHORT).show();return;}try{OpenRouterClient.saveKey(this,value);Toast.makeText(this,"Ключ сохранён",Toast.LENGTH_SHORT).show();if(after!=null)after.run();}catch(Exception e){Toast.makeText(this,"Не удалось безопасно сохранить ключ",Toast.LENGTH_LONG).show();}}).show();
+    }
+    void checkAI(Question q,EditText draft,String reference,TextView result,TextView trigger){
+        String response=draft.getText().toString().trim();
+        if(response.isEmpty()){Toast.makeText(this,"Сначала напиши ответ",Toast.LENGTH_SHORT).show();return;}
+        String key=OpenRouterClient.loadKey(this);
+        if(key.isEmpty()){configureAI(()->checkAI(q,draft,reference,result,trigger));return;}
+        trigger.setEnabled(false);trigger.setText("Проверяем через LLM…");result.setVisibility(View.VISIBLE);result.setText("Запрос отправлен. Ожидаем оценку.");
+        new Thread(()->{String message;try{message=OpenRouterClient.evaluate(key,q.text,q.level,response,reference);}catch(Exception e){message="Не удалось выполнить AI-проверку: "+e.getMessage()+"\nМожно воспользоваться локальным сравнением.";}
+            final String output=message;runOnUiThread(()->{if(isFinishing()||isDestroyed())return;trigger.setEnabled(true);trigger.setText("Проверить ответ через AI");result.setText(output);result.post(()->result.requestRectangleOnScreen(new android.graphics.Rect(0,0,result.getWidth(),Math.min(result.getHeight(),d(200))),false));});
+        }).start();
+    }
     void showQuestion(){page="question";Question q=deck.get(index);init("Тренировка",(index+1)+" / "+deck.size()+"  ·  "+q.category);
         addButton(body,questionOrigin.equals("browse")?"← К вопросам":"← На главную",false,()->leaveQuestion());
         LinearLayout card=column();card.setPadding(d(20),d(22),d(20),d(22));card.setBackground(shape(PANEL,20));card.addView(text(q.id+"  ·  "+q.level+"  ·  "+q.type,12,ACCENT,true));space(card,18);card.addView(text(q.text,21,TEXT,true));space(card,18);card.addView(text("Напиши ответ или ответь вслух. Если не знаешь, открой эталонный ответ.",14,MUTED,false));body.addView(card);space(body,16);
@@ -88,6 +109,8 @@ public class MainActivity extends Activity {
         EditText draft=new EditText(this);draft.setTextColor(TEXT);draft.setHintTextColor(MUTED);draft.setTextSize(16);draft.setGravity(Gravity.TOP|Gravity.START);draft.setPadding(d(16),d(14),d(16),d(14));draft.setBackground(shape(PANEL,14));draft.setHint("Напиши свой ответ здесь");draft.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE|android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);draft.setMinLines(4);draft.setText(prefs.getString("draft_"+q.id,""));body.addView(draft,new LinearLayout.LayoutParams(-1,-2));space(body,16);
         draft.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){prefs.edit().putString("draft_"+q.id,s.toString()).apply();}public void afterTextChanged(Editable e){}});
         String answer=answers.get(q.id);
+        TextView aiResult=text("",15,TEXT,false);aiResult.setPadding(d(16),d(14),d(16),d(14));aiResult.setBackground(shape(PANEL,14));aiResult.setTextIsSelectable(true);aiResult.setVisibility(View.GONE);
+        TextView aiButton=button("Проверить ответ через AI",true,()->{});aiButton.setOnClickListener(v->checkAI(q,draft,answer,aiResult,aiButton));body.addView(aiButton,new LinearLayout.LayoutParams(-1,-2));space(body,10);body.addView(aiResult);space(body,10);
         if(answer!=null && !answer.isEmpty()){
             TextView analysis=text("",14,TEXT,false);analysis.setPadding(d(16),d(14),d(16),d(14));analysis.setBackground(shape(PANEL,14));analysis.setVisibility(View.GONE);
             addButton(body,"Сравнить с примером",false,()->{analysis.setText(analyzer.compare(answer,draft.getText().toString()));analysis.setVisibility(View.VISIBLE);});
