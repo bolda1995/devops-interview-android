@@ -21,6 +21,11 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.11.1'
+      - name: Test learning chains
+        run: |
+          mkdir -p /tmp/chain-test
+          javac -encoding UTF-8 -d /tmp/chain-test app/src/main/java/ru/devops/interview/LearningChain.java tests/LearningChainTest.java
+          java -cp /tmp/chain-test ru.devops.interview.LearningChainTest app/src/main/assets/answers.md
       - run: gradle --no-daemon :app:assembleDebug
       - uses: actions/upload-artifact@v4
         with:
