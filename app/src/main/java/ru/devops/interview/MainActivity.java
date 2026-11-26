@@ -24,9 +24,51 @@ public class MainActivity extends Activity {
     final ArrayList<Question> all=new ArrayList<>(), deck=new ArrayList<>();
     final LinkedHashMap<String,Integer> categories=new LinkedHashMap<>();
     final HashMap<String,String> answers=new HashMap<>();
-    AnswerAnalyzer analyzer; SharedPreferences prefs; LinearLayout root, body; String category="Все темы", level="Все уровни", query=""; boolean favorites=false; int index=0; String page="home", questionOrigin="home";
+    AnswerAnalyzer analyzer; SharedPreferences prefs; LinearLayout root, body; String category="Все темы", level="Все уровни", query=""; boolean favorites=false; int bankFilter=0; int index=0; String page="home", questionOrigin="home";
     int d(float n){return (int)(n*getResources().getDisplayMetrics().density+0.5f);}
-    @Override public void onCreate(Bundle b){super.onCreate(b); getWindow().setStatusBarColor(BG); getWindow().setNavigationBarColor(BG); prefs=getSharedPreferences("progress",MODE_PRIVATE); if(b!=null)speechQuestionId=b.getString("speechQuestionId"); load(); loadAnswers(); loadKnowledge(); analyzer=new AnswerAnalyzer(answers.values()); home();}
+    @Override public void onCreate(Bundle b){super.onCreate(b); getWindow().setStatusBarColor(BG); getWindow().setNavigationBarColor(BG); prefs=getSharedPreferences("progress",MODE_PRIVATE); if(b!=null)speechQuestionId=b.getString("speechQuestionId"); loadCourse(); load(); loadAnswers(); loadKnowledge(); analyzer=new AnswerAnalyzer(answers.values()); home();}
+
+    static final String COURSE_PREFIX="2026 · ";
+    boolean course(Question q){return q.category.startsWith(COURSE_PREFIX);}
+    boolean inBank(Question q){
+        return bankFilter==0||(bankFilter==1&&course(q)&&!q.type.equals("Практика"))||
+            (bankFilter==2&&course(q)&&q.type.equals("Практика"))||(bankFilter==3&&!course(q));
+    }
+    void resetBrowse(int filter){bankFilter=filter;category="Все темы";level="Все уровни";query="";favorites=false;}
+    void loadCourse(){
+        try(InputStream in=getAssets().open("course2026.json");ByteArrayOutputStream data=new ByteArrayOutputStream()){
+            byte[] buf=new byte[8192];int n;while((n=in.read(buf))!=-1)data.write(buf,0,n);
+            org.json.JSONArray records=new org.json.JSONArray(new String(data.toByteArray(),StandardCharsets.UTF_8));
+            for(int i=0;i<records.length();i++){
+                org.json.JSONObject record=records.getJSONObject(i);
+                Question q=new Question();q.id=record.getString("id");q.level=record.getString("level");q.type=record.getString("type");q.category=record.getString("topic");
+                String task=record.optString("task","");q.text=record.getString("question")+(task.isEmpty()?"":"\n\n"+task);
+                all.add(q);Integer count=categories.get(q.category);categories.put(q.category,count==null?1:count+1);
+                answers.put(q.id,record.getString("answer"));
+            }
+        }catch(Exception e){Toast.makeText(this,"Не удалось загрузить курс DevOps 2026",Toast.LENGTH_LONG).show();}
+    }
+    void showAnswerGuide(){
+        page="answerGuide";init("Как отвечать","Методика курса DevOps Interview 2026");
+        addButton(body,"← На главную",false,()->home());
+        body.addView(text("Технический вопрос · 4 части",20,ACCENT,true));space(body,10);
+        body.addView(text("1. Определение — что это, одним предложением.\n\n2. Механизм — как и почему работает.\n\n3. Пример — реальная ситуация или явно обозначенный гипотетический пример.\n\n4. Ограничения — риски, компромиссы, типичные ошибки.",17,TEXT,false));space(body,20);
+        body.addView(text("Практическая задача",20,ACCENT,true));space(body,10);
+        body.addView(text("Уточни требования → выдвини гипотезы → назови команды и действия → проверь результат → продумай риски и откат.",17,TEXT,false));space(body,20);
+        body.addView(text("Если не знаешь",20,ACCENT,true));space(body,10);
+        body.addView(text("Честно обозначь пробел и объясни, как стал бы искать решение. Не выдумывай опыт.",17,TEXT,false));space(body,20);
+        body.addView(text("Soft skills · STAR",20,ACCENT,true));space(body,10);
+        body.addView(text("Ситуация → задача → действие → результат. Используй свои реальные истории и цифры.",17,TEXT,false));space(body,20);
+        body.addView(text("Источник: justxor/devops-interview-2026 (MIT указан в README)",13,MUTED,false));
+        addButton(body,"Открыть источник",false,()->{
+            try{startActivity(new android.content.Intent(android.content.Intent.ACTION_VIEW,android.net.Uri.parse("https://github.com/justxor/devops-interview-2026")));}catch(Exception e){Toast.makeText(this,"Не удалось открыть ссылку",Toast.LENGTH_SHORT).show();}
+        });
+    }
+    String answerTemplate(Question q){
+        if(q.type.equals("Практика"))return "Требования и гипотезы:\n\nШаги и команды:\n\nПроверка результата:\n\nРиски и откат:";
+        return "Определение:\n\nКак работает:\n\nПример:\n\nОграничения и компромиссы:";
+    }
+
     void load(){
         Pattern heading=Pattern.compile("^## (.+) \\((\\d+)\\)$");
         Pattern item=Pattern.compile("^- \\*\\*(Q-\\d+)\\*\\* · ([^·]+) · ([^:]+): (.+)$");
@@ -60,23 +102,26 @@ public class MainActivity extends Activity {
     int known(){int n=0;for(Question q:all)if(prefs.getBoolean("known_"+q.id,false))n++;return n;}
     int starred(){int n=0;for(Question q:all)if(prefs.getBoolean("fav_"+q.id,false))n++;return n;}
     void home(){page="home";init("DevOps Interview","Тренируйся отвечать уверенно");
-        LinearLayout hero=column();hero.setPadding(d(20),d(20),d(20),d(20));hero.setBackground(shape(PANEL,20));hero.addView(text("ТВОЯ ПОДГОТОВКА",12,ACCENT,true));space(hero,12);hero.addView(text(all.size()+" вопросов",26,TEXT,true));space(hero,6);hero.addView(text(categories.size()+" тем  ·  "+known()+" изучено  ·  "+starred()+" в избранном",14,MUTED,false));body.addView(hero);space(body,20);
-        addButton(body,"Начать тренировку  →",true,()->{category="Все темы";level="Все уровни";query="";favorites=false;startDeck(true);});
+        LinearLayout hero=column();hero.setPadding(d(20),d(20),d(20),d(20));hero.setBackground(shape(PANEL,20));hero.addView(text("ТВОЯ ПОДГОТОВКА",12,ACCENT,true));space(hero,12);hero.addView(text("DevOps 2026",26,TEXT,true));space(hero,6);hero.addView(text("150 вопросов · 55 практических задач",16,TEXT,false));space(hero,6);hero.addView(text(categories.size()+" тем  ·  "+known()+" изучено  ·  "+starred()+" в избранном",14,MUTED,false));body.addView(hero);space(body,20);
+        addButton(body,"Начать интервью 2026 →",true,()->{resetBrowse(1);startDeck(true);});
+        addButton(body,"150 вопросов курса",false,()->{resetBrowse(1);browse();});
+        addButton(body,"55 практических задач",false,()->{resetBrowse(2);browse();});
+        addButton(body,"Как отвечать на собеседовании",false,()->showAnswerGuide());
         addButton(body,"Тесты",true,()->showKnowledgeTopics());
         addButton(body,"Цепочки обучения",true,()->openLearningTopics(false));
-        addButton(body,"Категории и поиск",false,()->{category="Все темы";level="Все уровни";query="";favorites=false;browse();});
-        addButton(body,"Избранное  ·  "+starred(),false,()->{category="Все темы";level="Все уровни";query="";favorites=true;browse();});
+        addButton(body,"Дополнительная база · 1355 вопросов",false,()->{resetBrowse(3);browse();});
+        addButton(body,"Избранное  ·  "+starred(),false,()->{resetBrowse(0);favorites=true;browse();});
         addButton(body,"Повторить слабые вопросы  ·  "+weakQuestions().size(),true,()->repeatWeak());
         addButton(body,"История AI-проверок",false,()->showHistory());
         addButton(body,"Настройки AI · OpenRouter",false,()->configureAI(null));
-        space(body,14);body.addView(text("Как это работает",18,TEXT,true));space(body,8);body.addView(text("Напиши ответ или ответь вслух, открой пример и оцени себя. Прогресс и избранное сохраняются на устройстве. Ответы Q-00001—Q-00080 подробные; остальные — краткие опорные материалы, которые могут требовать уточнения.",14,MUTED,false));space(body,24);
+        space(body,14);body.addView(text("Как это работает",18,TEXT,true));space(body,8);body.addView(text("Основной курс: justxor/devops-interview-2026. Ответь по структуре, сравни с опорным ответом и получи AI-оценку. Старые вопросы и прогресс сохранены. Материал курса не заменяет актуальную документацию; практику выполняй только в песочнице.",14,MUTED,false));space(body,24);
     }
-    ArrayList<Question> filtered(){ArrayList<Question> list=new ArrayList<>();String term=query.trim().toLowerCase(Locale.ROOT);for(Question q:all)if((category.equals("Все темы")||q.category.equals(category))&&(level.equals("Все уровни")||q.level.equals(level))&&(!favorites||prefs.getBoolean("fav_"+q.id,false))&&(term.isEmpty()||(q.text+" "+q.id+" "+q.category).toLowerCase(Locale.ROOT).contains(term)))list.add(q);return list;}
-    void browse(){page="browse";init(favorites?"Избранное":"Банк вопросов","Выбери тему, уровень или найди вопрос");
+    ArrayList<Question> filtered(){ArrayList<Question> list=new ArrayList<>();String term=query.trim().toLowerCase(Locale.ROOT);for(Question q:all)if(inBank(q)&&(category.equals("Все темы")||q.category.equals(category))&&(level.equals("Все уровни")||q.level.equals(level))&&(!favorites||prefs.getBoolean("fav_"+q.id,false))&&(term.isEmpty()||(q.text+" "+q.id+" "+q.category).toLowerCase(Locale.ROOT).contains(term)))list.add(q);return list;}
+    void browse(){page="browse";init(favorites?"Избранное":bankFilter==1?"150 вопросов курса":bankFilter==2?"Практикум 2026":"Дополнительная база","Выбери тему, уровень или найди вопрос");
         addButton(body,"← На главную",false,()->home());
         EditText search=new EditText(this);search.setSingleLine(true);search.setTextColor(TEXT);search.setHintTextColor(MUTED);search.setTextSize(15);search.setPadding(d(14),0,d(14),0);search.setBackground(shape(PANEL,12));search.setHint("Поиск по вопросам");search.setText(query);body.addView(search,new LinearLayout.LayoutParams(-1,d(50)));space(body,12);
-        Spinner cat=new Spinner(this);ArrayList<String> cats=new ArrayList<>();cats.add("Все темы");cats.addAll(categories.keySet());setSpinner(cat,cats,Math.max(0,cats.indexOf(category)));body.addView(cat);space(body,10);
-        Spinner lev=new Spinner(this);ArrayList<String> levels=new ArrayList<>(Arrays.asList("Все уровни","Junior","Middle","Middle+","Senior"));setSpinner(lev,levels,Math.max(0,levels.indexOf(level)));body.addView(lev);space(body,16);
+        Spinner cat=new Spinner(this);ArrayList<String> cats=new ArrayList<>();cats.add("Все темы");for(String topic:categories.keySet()){for(Question q:all)if(inBank(q)&&q.category.equals(topic)){cats.add(topic);break;}}setSpinner(cat,cats,Math.max(0,cats.indexOf(category)));body.addView(cat);space(body,10);
+        Spinner lev=new Spinner(this);ArrayList<String> levels=new ArrayList<>(Arrays.asList("Все уровни","Junior","Middle","Middle+","Senior","Практика"));setSpinner(lev,levels,Math.max(0,levels.indexOf(level)));body.addView(lev);space(body,16);
         TextView count=text("",14,MUTED,false);body.addView(count);space(body,12);LinearLayout results=column();body.addView(results);
         Runnable refresh=()->{ArrayList<Question> list=filtered();count.setText("Найдено: "+list.size());results.removeAllViews();if(list.isEmpty()){results.addView(text("Ничего не найдено. Попробуй изменить фильтры.",15,MUTED,false));return;}addButton(results,"Тренировать выборку  →",true,()->startDeck(true));int max=Math.min(100,list.size());for(int i=0;i<max;i++){Question q=list.get(i);LinearLayout card=column();card.setPadding(d(16),d(14),d(16),d(14));card.setBackground(shape(PANEL,14));card.addView(text(q.id+"  ·  "+q.level+"  ·  "+q.type,12,ACCENT,true));space(card,7);TextView qt=text(q.text,15,TEXT,false);qt.setMaxLines(3);card.addView(qt);space(card,5);card.addView(text(q.category,12,MUTED,false));card.setOnClickListener(v->{questionOrigin="browse";deck.clear();deck.addAll(filtered());index=deck.indexOf(q);showQuestion();});results.addView(card);space(results,8);}if(list.size()>max)results.addView(text("Показаны первые 100. Уточни поиск или начни тренировку всей выборки.",13,MUTED,false));};
         cat.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener(){public void onNothingSelected(android.widget.AdapterView<?> p){} public void onItemSelected(android.widget.AdapterView<?> p,View v,int pos,long id){category=cats.get(pos);refresh.run();}});
@@ -154,7 +199,7 @@ public class MainActivity extends Activity {
     }
     void checkAI(Question q,EditText draft,String reference,TextView result,TextView trigger){
         String response=draft.getText().toString().trim();
-        if(response.isEmpty()){Toast.makeText(this,"Сначала напиши ответ",Toast.LENGTH_SHORT).show();return;}
+        if(response.isEmpty()||response.equals(answerTemplate(q))){Toast.makeText(this,"Сначала напиши ответ",Toast.LENGTH_SHORT).show();return;}
         String key=OpenRouterClient.loadKey(this);
         if(key.isEmpty()){configureAI(()->checkAI(q,draft,reference,result,trigger));return;}
         if(!pendingChecks.add(q.id)){Toast.makeText(this,"Этот вопрос уже проверяется",Toast.LENGTH_SHORT).show();return;}
@@ -169,9 +214,11 @@ public class MainActivity extends Activity {
         addButton(body,"Тесты по этой теме",true,()->startKnowledge(q.category,true,false));
         addButton(body,"Выучить ответ по цепочке",false,()->{startChain(q,true);});
         body.addView(text("ТВОЙ ОТВЕТ",12,ACCENT,true));space(body,8);
+        body.addView(text(q.type.equals("Практика")?"Уточни требования → шаги и команды → проверка → риски и откат. Команды выполняй только в тестовой среде.":"Определение → механизм → пример → ограничения. Если опыта нет, обозначь гипотетический пример.",14,MUTED,false));space(body,10);
         EditText draft=new EditText(this);draft.setTextColor(TEXT);draft.setHintTextColor(MUTED);draft.setTextSize(16);draft.setGravity(Gravity.TOP|Gravity.START);draft.setPadding(d(16),d(14),d(16),d(14));draft.setBackground(shape(PANEL,14));draft.setHint("Напиши свой ответ здесь");draft.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE|android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);draft.setMinLines(4);draft.setText(prefs.getString("draft_"+q.id,""));body.addView(draft,new LinearLayout.LayoutParams(-1,-2));space(body,16);
         draft.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){prefs.edit().putString("draft_"+q.id,s.toString()).apply();}public void afterTextChanged(Editable e){}});
         activeDraft=draft;
+        addButton(body,"Вставить структуру ответа",false,()->{if(draft.getText().toString().trim().isEmpty()){String template=answerTemplate(q);draft.setText(template);draft.setSelection(template.length());}else Toast.makeText(this,"Черновик уже содержит текст — структура не заменит его",Toast.LENGTH_SHORT).show();});
         addButton(body,"🎙 Ответить голосом",false,()->voiceInput(q));
         String answer=answers.get(q.id);
         TextView aiResult=text("",15,TEXT,false);aiResult.setPadding(d(16),d(14),d(16),d(14));aiResult.setBackground(shape(PANEL,14));aiResult.setTextIsSelectable(true);aiResult.setVisibility(View.GONE);
@@ -183,7 +230,7 @@ public class MainActivity extends Activity {
             TextView toggle=button("Не знаю ответ — показать  ↓",true,()->{});
             body.addView(toggle,new LinearLayout.LayoutParams(-1,-2));space(body,10);
             LinearLayout answerCard=column();answerCard.setPadding(d(20),d(18),d(20),d(18));answerCard.setBackground(shape(PANEL,20));
-            answerCard.addView(text("ОТВЕТ",12,ACCENT,true));space(answerCard,10);TextView answerText=text(answer,16,TEXT,false);answerText.setTextIsSelectable(true);answerText.setLineSpacing(d(3),1f);answerCard.addView(answerText);answerCard.setVisibility(View.GONE);body.addView(answerCard);space(body,10);
+            answerCard.addView(text(course(q)?"ОПОРНЫЙ ОТВЕТ · DEVOPS 2026":"ОТВЕТ",12,ACCENT,true));space(answerCard,10);TextView answerText=text(answer,16,TEXT,false);answerText.setTextIsSelectable(true);answerText.setLineSpacing(d(3),1f);answerCard.addView(answerText);answerCard.setVisibility(View.GONE);body.addView(answerCard);space(body,10);
             toggle.setOnClickListener(v->{boolean visible=answerCard.getVisibility()==View.VISIBLE;answerCard.setVisibility(visible?View.GONE:View.VISIBLE);toggle.setText(visible?"Не знаю ответ — показать  ↓":"Скрыть ответ  ↑");if(!visible){PracticeHistory.markUnknown(prefs,q.id);((InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE)).hideSoftInputFromWindow(draft.getWindowToken(),0);draft.clearFocus();answerCard.post(()->{android.graphics.Rect rect=new android.graphics.Rect(0,0,answerCard.getWidth(),Math.min(answerCard.getHeight(),d(200)));answerCard.requestRectangleOnScreen(rect,false);});}});
         }else{addButton(body,"Не знаю ответ",true,()->{PracticeHistory.markUnknown(prefs,q.id);Toast.makeText(this,"Для этого вопроса эталонный ответ пока не добавлен.",Toast.LENGTH_LONG).show();});body.addView(text("Для этого вопроса ответ не найден.",14,MUTED,false));space(body,10);}
         boolean fav=prefs.getBoolean("fav_"+q.id,false), known=prefs.getBoolean("known_"+q.id,false);
@@ -320,12 +367,35 @@ public class MainActivity extends Activity {
             knowledgeBank=KnowledgeQuiz.read(reader);
         }catch(IOException e){Toast.makeText(this,"Не удалось загрузить тесты",Toast.LENGTH_LONG).show();}
     }
+
+    boolean knowledgeMatches(String topic,String itemTopic){
+        if(topic.equals("Все темы")||topic.equals(itemTopic))return true;
+        if(!topic.startsWith(COURSE_PREFIX))return false;
+        String name=topic.substring(COURSE_PREFIX.length());
+        switch(name){
+            case "Linux":return itemTopic.startsWith("Linux:");
+            case "Сети":return itemTopic.startsWith("Сети:");
+            case "Docker":return itemTopic.startsWith("Docker");
+            case "Kubernetes":return itemTopic.startsWith("Kubernetes:");
+            case "CI/CD":return itemTopic.startsWith("CI/CD")||itemTopic.startsWith("GitLab CI")||itemTopic.startsWith("Helm");
+            case "IaC":return itemTopic.startsWith("Terraform")||itemTopic.startsWith("Ansible");
+            case "Облака":return itemTopic.startsWith("Облака")||itemTopic.startsWith("Storage");
+            case "Observability":return itemTopic.startsWith("Observability:");
+            case "Security":return itemTopic.startsWith("Security");
+            case "SRE":return itemTopic.startsWith("SRE:");
+            case "Инциденты":return itemTopic.startsWith("SRE:")||itemTopic.startsWith("IT Operations");
+            case "Bash и Python":return itemTopic.startsWith("Автоматизация");
+            case "System Design":return itemTopic.startsWith("Архитектура");
+            default:return false;
+        }
+    }
+
     void showKnowledgeTopics(){
         page="knowledgeTopics";init("Тесты знаний","Вопросы по теории и практические ситуации · "+knowledgeBank.size()+" заданий");
         addButton(body,"← На главную",false,()->home());
         addButton(body,"Смешанный тест · 10 вопросов",true,()->startKnowledge("Все темы",false,false));
         for(String topic:categories.keySet()){
-            int count=0;for(KnowledgeQuiz.Item item:knowledgeBank)if(item.topic.equals(topic))count++;
+            int count=0;for(KnowledgeQuiz.Item item:knowledgeBank)if(knowledgeMatches(topic,item.topic))count++;
             if(count==0)continue;
             String last=prefs.getString("knowledge_last_"+topic,"");
             addButton(body,topic+" · "+count+(last.isEmpty()?"":" · Последний: "+last),false,()->startKnowledge(topic,false,false));
@@ -334,7 +404,7 @@ public class MainActivity extends Activity {
     void startKnowledge(String topic,boolean fromQuestion,boolean mistakesOnly){
         ArrayList<KnowledgeQuiz.Item> pool=new ArrayList<>();
         if(mistakesOnly)pool.addAll(knowledgeMistakes);
-        else for(KnowledgeQuiz.Item item:knowledgeBank)if(topic.equals("Все темы")||item.topic.equals(topic))pool.add(item);
+        else for(KnowledgeQuiz.Item item:knowledgeBank)if(knowledgeMatches(topic,item.topic))pool.add(item);
         if(pool.isEmpty()){Toast.makeText(this,"Нет вопросов в этой выборке",Toast.LENGTH_SHORT).show();return;}
         Collections.shuffle(pool);
         if(!mistakesOnly&&topic.equals("Все темы")&&pool.size()>10)pool=new ArrayList<>(pool.subList(0,10));
@@ -396,5 +466,5 @@ public class MainActivity extends Activity {
         addButton(body,"← Назад",false,()->leaveKnowledge());
     }
 
-    @Override public void onBackPressed(){if(page.equals("knowledge")){leaveKnowledge();}else if(page.equals("knowledgeTopics")){home();}else if(page.equals("chain")){leaveChain();}else if(page.equals("chainList")){showChainTopics();}else if(page.equals("chainTopics")){home();}else if(page.equals("question")){leaveQuestion();}else if(page.equals("browse")||page.equals("history")){home();}else super.onBackPressed();}
+    @Override public void onBackPressed(){if(page.equals("knowledge")){leaveKnowledge();}else if(page.equals("knowledgeTopics")||page.equals("answerGuide")){home();}else if(page.equals("chain")){leaveChain();}else if(page.equals("chainList")){showChainTopics();}else if(page.equals("chainTopics")){home();}else if(page.equals("question")){leaveQuestion();}else if(page.equals("browse")||page.equals("history")){home();}else super.onBackPressed();}
 }

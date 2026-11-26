@@ -1,0 +1,1697 @@
+[
+  {
+    "id": "Q-260001",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Linux",
+    "question": "Процесс vs поток?",
+    "answer": "Поток делит адресное пространство и дескрипторы процесса; процессы изолированы друг от друга."
+  },
+  {
+    "id": "Q-260002",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Linux",
+    "question": "Что такое зомби-процесс?",
+    "answer": "Завершившийся процесс, чей код возврата не прочитал родитель (wait()). Убрать — перезапустить/исправить родителя."
+  },
+  {
+    "id": "Q-260003",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Linux",
+    "question": "SIGTERM vs SIGKILL?",
+    "answer": "TERM можно перехватить и корректно завершиться; KILL — немедленно ядром, перехватить нельзя."
+  },
+  {
+    "id": "Q-260004",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Linux",
+    "question": "Почему kill -9 не убивает процесс?",
+    "answer": "Процесс в D-state (uninterruptible I/O, например NFS) или уже зомби."
+  },
+  {
+    "id": "Q-260005",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Linux",
+    "question": "Что показывает load average?",
+    "answer": "Среднее число процессов в R и D за 1/5/15 мин. Сравнивать с числом ядер."
+  },
+  {
+    "id": "Q-260006",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Linux",
+    "question": "Высокий LA, но CPU простаивает — почему?",
+    "answer": "Процессы ждут I/O (D-state): диск, NFS. Смотреть iostat -x, vmstat (колонки b, wa)."
+  },
+  {
+    "id": "Q-260007",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Linux",
+    "question": "Что такое inode?",
+    "answer": "Структура с метаданными файла (права, владелец, блоки), без имени. Могут закончиться раньше места — df -i."
+  },
+  {
+    "id": "Q-260008",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Linux",
+    "question": "Hard link vs symlink?",
+    "answer": "Hard — ещё одно имя того же inode в пределах ФС; symlink — отдельный файл с путём, может «висеть»."
+  },
+  {
+    "id": "Q-260009",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Linux",
+    "question": "df показывает 100%, du — 40%. Почему?",
+    "answer": "Удалённый файл держит открытым процесс. lsof +L1, перезапустить процесс или обнулить через /proc/PID/fd."
+  },
+  {
+    "id": "Q-260010",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Linux",
+    "question": "free vs available в free -h?",
+    "answer": "available учитывает освобождаемый page cache — это реальная доступная память."
+  },
+  {
+    "id": "Q-260011",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Linux",
+    "question": "Как работает OOM killer?",
+    "answer": "При нехватке памяти ядро убивает процесс с наибольшим oom_score (с учётом oom_score_adj). Следы — dmesg."
+  },
+  {
+    "id": "Q-260012",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Linux",
+    "question": "Что делает chmod 755 и chmod 4755?",
+    "answer": "rwxr-xr-x; 4 — SUID: запуск с правами владельца файла."
+  },
+  {
+    "id": "Q-260013",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Linux",
+    "question": "Как посмотреть слушающие порты?",
+    "answer": "ss -tulpn (или netstat -tulpn, lsof -i)."
+  },
+  {
+    "id": "Q-260014",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Linux",
+    "question": "Порядок загрузки Linux?",
+    "answer": "UEFI/BIOS → GRUB → ядро + initramfs → systemd (PID 1) → targets → сервисы."
+  },
+  {
+    "id": "Q-260015",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Linux",
+    "question": "Как сделать сервис автозапускаемым?",
+    "answer": "Юнит в /etc/systemd/system, systemctl daemon-reload && systemctl enable --now svc."
+  },
+  {
+    "id": "Q-260016",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Linux",
+    "question": "«Too many open files» — что делать?",
+    "answer": "Поднять лимит: LimitNOFILE в юните, ulimit -n, /etc/security/limits.conf; проверить утечку дескрипторов."
+  },
+  {
+    "id": "Q-260017",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Linux",
+    "question": "Что такое swap и нужен ли он серверу?",
+    "answer": "Выгрузка страниц на диск. Небольшой swap спасает от OOM, но может вызывать деградацию; для БД/K8s традиционно минимизируют (vm.swappiness)."
+  },
+  {
+    "id": "Q-260018",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Linux",
+    "question": "Как найти большие файлы?",
+    "answer": "find / -xdev -type f -size +1G, du -xh --max-depth=1 / | sort -h, ncdu."
+  },
+  {
+    "id": "Q-260019",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Linux",
+    "question": "Что такое strace и когда использовать?",
+    "answer": "Трассировка системных вызовов: процесс «висит», не может открыть файл, к чему подключается."
+  },
+  {
+    "id": "Q-260020",
+    "level": "Senior",
+    "type": "Теория",
+    "topic": "2026 · Linux",
+    "question": "Как диагностировать медленный сервер за 60 секунд?",
+    "answer": "uptime, dmesg, vmstat 1, mpstat -P ALL, pidstat, iostat -xz, free -m, sar -n DEV, sar -n TCP,ETCP, top (метод Брендана Грегга)."
+  },
+  {
+    "id": "Q-260021",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Сети",
+    "question": "Модель OSI?",
+    "answer": "Physical, Data Link, Network, Transport, Session, Presentation, Application."
+  },
+  {
+    "id": "Q-260022",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Сети",
+    "question": "TCP vs UDP?",
+    "answer": "TCP — соединение, гарантия доставки и порядка; UDP — без соединения и гарантий, быстрее."
+  },
+  {
+    "id": "Q-260023",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Сети",
+    "question": "Трёхстороннее рукопожатие TCP?",
+    "answer": "SYN → SYN-ACK → ACK."
+  },
+  {
+    "id": "Q-260024",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Сети",
+    "question": "Что такое TIME_WAIT?",
+    "answer": "Состояние закрывшей первой стороны на 2×MSL, чтобы поздние пакеты не попали в новое соединение."
+  },
+  {
+    "id": "Q-260025",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Сети",
+    "question": "Как работает DNS-резолв?",
+    "answer": "Кэш → hosts → рекурсивный резолвер → root → TLD → authoritative → ответ кэшируется по TTL."
+  },
+  {
+    "id": "Q-260026",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Сети",
+    "question": "A vs CNAME?",
+    "answer": "A — имя → IPv4; CNAME — имя → другое имя. CNAME нельзя на apex."
+  },
+  {
+    "id": "Q-260027",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Сети",
+    "question": "502 vs 503 vs 504?",
+    "answer": "502 — некорректный ответ апстрима; 503 — сервис недоступен; 504 — апстрим не ответил за таймаут."
+  },
+  {
+    "id": "Q-260028",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Сети",
+    "question": "HTTP/1.1 vs HTTP/2 vs HTTP/3?",
+    "answer": "H2 — мультиплексирование в одном TCP, бинарный, HPACK; H3 — QUIC поверх UDP, нет TCP head-of-line blocking."
+  },
+  {
+    "id": "Q-260029",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Сети",
+    "question": "Как работает TLS handshake?",
+    "answer": "ClientHello (шифры, key share, SNI) → ServerHello + сертификат → ECDHE общий ключ → симметричное шифрование. TLS 1.3 — 1-RTT."
+  },
+  {
+    "id": "Q-260030",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Сети",
+    "question": "Что такое mTLS?",
+    "answer": "Обе стороны предъявляют сертификаты. Используется в service mesh и zero trust."
+  },
+  {
+    "id": "Q-260031",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Сети",
+    "question": "L4 vs L7 балансировщик?",
+    "answer": "L4 — по IP/порту (TCP/UDP); L7 — видит HTTP: путь, заголовки, cookie, TLS termination."
+  },
+  {
+    "id": "Q-260032",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Сети",
+    "question": "Что такое NAT?",
+    "answer": "Трансляция адресов: SNAT — приватные хосты выходят в интернет; DNAT — проброс портов внутрь."
+  },
+  {
+    "id": "Q-260033",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Сети",
+    "question": "Сколько адресов в /26?",
+    "answer": "64 (62 хоста)."
+  },
+  {
+    "id": "Q-260034",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Сети",
+    "question": "Что такое MTU и проблемы с ним?",
+    "answer": "Максимальный размер кадра. В туннелях (VXLAN, VPN) — фрагментация/дроп: ping проходит, большие пакеты (TLS) виснут."
+  },
+  {
+    "id": "Q-260035",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Сети",
+    "question": "Что такое anycast?",
+    "answer": "Один IP анонсируется из многих точек по BGP — трафик идёт к ближайшей (CDN, публичные DNS)."
+  },
+  {
+    "id": "Q-260036",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Сети",
+    "question": "Что происходит при вводе URL в браузер?",
+    "answer": "URL → DNS → TCP/QUIC → TLS → HTTP → CDN/LB → приложение → ответ → рендер."
+  },
+  {
+    "id": "Q-260037",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Сети",
+    "question": "Что такое CDN и как инвалидировать кэш?",
+    "answer": "Сеть edge-кэшей. Инвалидация через API/purge или версионирование имён файлов (хеш в имени)."
+  },
+  {
+    "id": "Q-260038",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Сети",
+    "question": "Как проверить доступность порта?",
+    "answer": "nc -zv host port, curl -v telnet://host:port, ss на сервере."
+  },
+  {
+    "id": "Q-260039",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Сети",
+    "question": "Как снять трафик для анализа?",
+    "answer": "tcpdump -i any -nn host X and port 443 -w f.pcap → Wireshark."
+  },
+  {
+    "id": "Q-260040",
+    "level": "Senior",
+    "type": "Теория",
+    "topic": "2026 · Сети",
+    "question": "Проблема ndots в K8s?",
+    "answer": "ndots:5 → внешний домен сначала пробуется со всеми search-доменами → лишние DNS-запросы и задержки. Решение — FQDN с точкой, dnsConfig, NodeLocal DNSCache."
+  },
+  {
+    "id": "Q-260041",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Git",
+    "question": "merge vs rebase?",
+    "answer": "merge — merge-коммит, сохраняет историю; rebase — переписывает коммиты поверх base, линейная история, не для общих веток."
+  },
+  {
+    "id": "Q-260042",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Git",
+    "question": "Как отменить запушенный коммит?",
+    "answer": "git revert <sha>."
+  },
+  {
+    "id": "Q-260043",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Git",
+    "question": "fetch vs pull?",
+    "answer": "pull = fetch + merge (или rebase)."
+  },
+  {
+    "id": "Q-260044",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Git",
+    "question": "Как восстановить удалённую ветку/коммит?",
+    "answer": "git reflog → git branch name <sha>."
+  },
+  {
+    "id": "Q-260045",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Git",
+    "question": "reset --soft/--mixed/--hard?",
+    "answer": "soft — изменения в index; mixed — в рабочей копии; hard — удалить."
+  },
+  {
+    "id": "Q-260046",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Git",
+    "question": "Что такое --force-with-lease?",
+    "answer": "Force push, который откажет, если удалённая ветка изменилась с последнего fetch."
+  },
+  {
+    "id": "Q-260047",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Git",
+    "question": "Trunk-based vs GitFlow?",
+    "answer": "Trunk — короткие ветки, частые мержи, feature flags (под CI/CD); GitFlow — долгие ветки develop/release, тяжеловесно."
+  },
+  {
+    "id": "Q-260048",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Git",
+    "question": "Закоммитили секрет — что делать?",
+    "answer": "Сначала отозвать/ротировать секрет, затем чистить историю (git filter-repo/BFG), включить secret scanning."
+  },
+  {
+    "id": "Q-260049",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Docker",
+    "question": "Контейнер vs ВМ?",
+    "answer": "Контейнер — изолированный процесс на общем ядре; ВМ — полная ОС со своим ядром на гипервизоре."
+  },
+  {
+    "id": "Q-260050",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Docker",
+    "question": "Что такое namespaces и cgroups?",
+    "answer": "namespaces — изоляция видимости (pid, net, mnt, uts, ipc, user); cgroups — ограничение ресурсов."
+  },
+  {
+    "id": "Q-260051",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Docker",
+    "question": "Образ vs контейнер?",
+    "answer": "Образ — read-only шаблон из слоёв; контейнер — запущенный экземпляр с writable-слоем."
+  },
+  {
+    "id": "Q-260052",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Docker",
+    "question": "Как уменьшить образ?",
+    "answer": "Multi-stage, slim/distroless база, меньше слоёв, чистка кэшей пакетного менеджера, .dockerignore."
+  },
+  {
+    "id": "Q-260053",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Docker",
+    "question": "CMD vs ENTRYPOINT?",
+    "answer": "ENTRYPOINT — что запускается; CMD — аргументы по умолчанию, легко переопределить."
+  },
+  {
+    "id": "Q-260054",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Docker",
+    "question": "exec vs shell form?",
+    "answer": "exec [\"app\"] — app = PID 1 и получает сигналы; shell — PID 1 = sh, SIGTERM не доходит."
+  },
+  {
+    "id": "Q-260055",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Docker",
+    "question": "COPY vs ADD?",
+    "answer": "ADD умеет URL и распаковку tar; предпочитать COPY."
+  },
+  {
+    "id": "Q-260056",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Docker",
+    "question": "Как работает кэш слоёв?",
+    "answer": "Слой переиспользуется, если инструкция и входы не изменились; изменение инвалидирует все последующие."
+  },
+  {
+    "id": "Q-260057",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Docker",
+    "question": "volume vs bind mount?",
+    "answer": "volume управляется Docker; bind — произвольный путь хоста."
+  },
+  {
+    "id": "Q-260058",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Docker",
+    "question": "Exit code 137?",
+    "answer": "128+9 — SIGKILL, чаще всего OOMKilled."
+  },
+  {
+    "id": "Q-260059",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Docker",
+    "question": "Как безопасно передать секрет при сборке?",
+    "answer": "RUN --mount=type=secret,id=x (BuildKit), не ARG/ENV."
+  },
+  {
+    "id": "Q-260060",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Docker",
+    "question": "Почему опасно монтировать docker.sock?",
+    "answer": "Доступ к сокету = root на хосте."
+  },
+  {
+    "id": "Q-260061",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Docker",
+    "question": "Docker vs containerd vs runc?",
+    "answer": "Docker — инструмент/демон; containerd — высокоуровневый рантайм (CRI для K8s); runc — запуск контейнера по OCI-спеке."
+  },
+  {
+    "id": "Q-260062",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Docker",
+    "question": "Как собрать образ под arm64 и amd64?",
+    "answer": "docker buildx build --platform linux/amd64,linux/arm64 --push."
+  },
+  {
+    "id": "Q-260063",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Kubernetes",
+    "question": "Компоненты control plane?",
+    "answer": "kube-apiserver, etcd, kube-scheduler, kube-controller-manager (+ cloud-controller-manager)."
+  },
+  {
+    "id": "Q-260064",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Kubernetes",
+    "question": "Компоненты worker-ноды?",
+    "answer": "kubelet, kube-proxy, container runtime (containerd), CNI."
+  },
+  {
+    "id": "Q-260065",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Kubernetes",
+    "question": "Что происходит при kubectl apply?",
+    "answer": "API: authn → authz → admission → etcd; контроллеры создают RS/Pods; scheduler выбирает ноду; kubelet запускает через CRI/CNI/CSI."
+  },
+  {
+    "id": "Q-260066",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Kubernetes",
+    "question": "Pod vs Deployment?",
+    "answer": "Pod — единица запуска; Deployment управляет ReplicaSet'ами: реплики, rolling update, откат."
+  },
+  {
+    "id": "Q-260067",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Kubernetes",
+    "question": "Deployment vs StatefulSet?",
+    "answer": "StatefulSet: стабильные имена, свой PVC на под, упорядоченный запуск — для БД/кластерного ПО."
+  },
+  {
+    "id": "Q-260068",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Kubernetes",
+    "question": "Что такое DaemonSet?",
+    "answer": "Под на каждой (подходящей) ноде — агенты логов/мониторинга/CNI."
+  },
+  {
+    "id": "Q-260069",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Kubernetes",
+    "question": "Типы Service?",
+    "answer": "ClusterIP, NodePort, LoadBalancer, ExternalName, Headless."
+  },
+  {
+    "id": "Q-260070",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Kubernetes",
+    "question": "Как Service работает под капотом?",
+    "answer": "kube-proxy (или Cilium eBPF) настраивает DNAT с виртуального IP на IP готовых подов из EndpointSlice."
+  },
+  {
+    "id": "Q-260071",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Kubernetes",
+    "question": "readiness vs liveness?",
+    "answer": "readiness — убирает под из балансировки; liveness — рестартует контейнер."
+  },
+  {
+    "id": "Q-260072",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Kubernetes",
+    "question": "Зачем startupProbe?",
+    "answer": "Для медленно стартующих приложений: пока не прошла, liveness не убивает контейнер."
+  },
+  {
+    "id": "Q-260073",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Kubernetes",
+    "question": "requests vs limits?",
+    "answer": "requests — для планирования (гарантия); limits — потолок."
+  },
+  {
+    "id": "Q-260074",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Kubernetes",
+    "question": "QoS-классы?",
+    "answer": "Guaranteed (req=lim), Burstable, BestEffort — порядок выселения при нехватке ресурсов обратный."
+  },
+  {
+    "id": "Q-260075",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Kubernetes",
+    "question": "Что будет при превышении CPU и памяти?",
+    "answer": "CPU — throttling; память — OOMKilled."
+  },
+  {
+    "id": "Q-260076",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Kubernetes",
+    "question": "Под в Pending — причины?",
+    "answer": "Нет ресурсов, taints, nodeSelector/affinity, не связан PVC, лимиты квоты."
+  },
+  {
+    "id": "Q-260077",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Kubernetes",
+    "question": "CrashLoopBackOff — действия?",
+    "answer": "describe (exit code, events), logs --previous, конфиги/секреты, probes, OOM, откат."
+  },
+  {
+    "id": "Q-260078",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Kubernetes",
+    "question": "taints/tolerations vs affinity?",
+    "answer": "Taint — нода отталкивает поды; affinity — под притягивается к нодам/подам."
+  },
+  {
+    "id": "Q-260079",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Kubernetes",
+    "question": "Что такое PDB?",
+    "answer": "PodDisruptionBudget — минимум доступных подов при добровольных прерываниях (drain, апгрейд)."
+  },
+  {
+    "id": "Q-260080",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Kubernetes",
+    "question": "HPA vs VPA vs KEDA?",
+    "answer": "HPA — число реплик по метрикам; VPA — requests; KEDA — по внешним событиям, scale-to-zero."
+  },
+  {
+    "id": "Q-260081",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Kubernetes",
+    "question": "Cluster Autoscaler vs Karpenter?",
+    "answer": "CA масштабирует группы нод; Karpenter подбирает тип инстанса под pending-поды напрямую, быстрее, консолидирует."
+  },
+  {
+    "id": "Q-260082",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Kubernetes",
+    "question": "Почему Secret небезопасен?",
+    "answer": "base64, хранится в etcd открыто без encryption at rest; доступен всем с правом get secrets."
+  },
+  {
+    "id": "Q-260083",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Kubernetes",
+    "question": "Ingress vs Gateway API?",
+    "answer": "Gateway API — новый стандарт: разделение ролей, L4/L7, gRPC, богаче маршрутизация, переносимость; ingress-nginx уходит из поддержки."
+  },
+  {
+    "id": "Q-260084",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Kubernetes",
+    "question": "Как сделать zero-downtime деплой?",
+    "answer": "readiness, maxUnavailable 0, preStop sleep, обработка SIGTERM, PDB, достаточный terminationGracePeriod."
+  },
+  {
+    "id": "Q-260085",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Kubernetes",
+    "question": "Helm vs Kustomize?",
+    "answer": "Helm — шаблоны + релизы + пакеты; Kustomize — патчи и overlays без шаблонов."
+  },
+  {
+    "id": "Q-260086",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Kubernetes",
+    "question": "Что такое оператор?",
+    "answer": "CRD + контроллер, автоматизирующий эксплуатацию сложного ПО (бэкапы, failover)."
+  },
+  {
+    "id": "Q-260087",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Kubernetes",
+    "question": "RBAC в K8s?",
+    "answer": "Role/ClusterRole (права) + RoleBinding/ClusterRoleBinding (к пользователю/группе/ServiceAccount)."
+  },
+  {
+    "id": "Q-260088",
+    "level": "Senior",
+    "type": "Теория",
+    "topic": "2026 · Kubernetes",
+    "question": "Как поды на разных нодах общаются?",
+    "answer": "CNI: overlay (VXLAN/Geneve) или прямая маршрутизация (BGP), либо eBPF (Cilium); у каждого пода свой IP без NAT."
+  },
+  {
+    "id": "Q-260089",
+    "level": "Senior",
+    "type": "Теория",
+    "topic": "2026 · Kubernetes",
+    "question": "Как обновить кластер K8s?",
+    "answer": "Проверить deprecated API, бэкап etcd, control plane → ноды по одной минорной версии, drain с PDB, проверить аддоны."
+  },
+  {
+    "id": "Q-260090",
+    "level": "Senior",
+    "type": "Теория",
+    "topic": "2026 · Kubernetes",
+    "question": "Как бэкапить K8s?",
+    "answer": "etcd snapshot (control plane) + Velero (ресурсы + PV снапшоты) + GitOps-репо как источник манифестов."
+  },
+  {
+    "id": "Q-260091",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · CI/CD",
+    "question": "CI vs CD?",
+    "answer": "CI — автосборка и тесты каждого изменения; Delivery — готовность к релизу по кнопке; Deployment — автоматически в прод."
+  },
+  {
+    "id": "Q-260092",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · CI/CD",
+    "question": "Стадии пайплайна?",
+    "answer": "lint → test → build → scan → push → deploy → e2e/smoke."
+  },
+  {
+    "id": "Q-260093",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · CI/CD",
+    "question": "Build once, deploy many?",
+    "answer": "Один неизменяемый артефакт (по digest) продвигается по всем окружениям; конфиг — снаружи."
+  },
+  {
+    "id": "Q-260094",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · CI/CD",
+    "question": "Blue-green vs canary?",
+    "answer": "BG — переключение всего трафика между средами; canary — постепенный % трафика с анализом метрик."
+  },
+  {
+    "id": "Q-260095",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · CI/CD",
+    "question": "Как ускорить пайплайн?",
+    "answer": "Кэш, параллелизм, тесты только изменённого, собственные runner'ы, BuildKit кэш, меньшие образы."
+  },
+  {
+    "id": "Q-260096",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · CI/CD",
+    "question": "Что такое GitOps?",
+    "answer": "Желаемое состояние в Git, агент в кластере тянет и сверяет (Argo CD, Flux), drift исправляется автоматически."
+  },
+  {
+    "id": "Q-260097",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · CI/CD",
+    "question": "Push vs pull деплой?",
+    "answer": "Push — CI ходит в кластер (нужны креды в CI); pull — кластер тянет из Git (безопаснее, видит drift)."
+  },
+  {
+    "id": "Q-260098",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · CI/CD",
+    "question": "Как хранить секреты в CI?",
+    "answer": "Masked/protected vars, OIDC к облаку, Vault, никогда в репо и логах."
+  },
+  {
+    "id": "Q-260099",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · CI/CD",
+    "question": "Миграции БД без даунтайма?",
+    "answer": "Expand/contract: обратно-совместимая схема → новый код → удаление старого."
+  },
+  {
+    "id": "Q-260100",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · CI/CD",
+    "question": "DORA-метрики?",
+    "answer": "Deployment frequency, Lead time, Change failure rate, Time to restore."
+  },
+  {
+    "id": "Q-260101",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · CI/CD",
+    "question": "Feature flags — зачем?",
+    "answer": "Разделить деплой и релиз, быстро выключить фичу, A/B, canary для пользователей."
+  },
+  {
+    "id": "Q-260102",
+    "level": "Senior",
+    "type": "Теория",
+    "topic": "2026 · CI/CD",
+    "question": "Как защитить CI/CD от supply-chain атак?",
+    "answer": "Pin по SHA, минимальные права токенов, OIDC, изолированные runner'ы, подпись артефактов, SBOM, review изменений пайплайна."
+  },
+  {
+    "id": "Q-260103",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · IaC",
+    "question": "Зачем IaC?",
+    "answer": "Воспроизводимость, версионирование, ревью, автоматизация, меньше ручных ошибок."
+  },
+  {
+    "id": "Q-260104",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · IaC",
+    "question": "Что такое Terraform state?",
+    "answer": "Соответствие кода реальным ресурсам + метаданные. Хранить удалённо с блокировкой и шифрованием."
+  },
+  {
+    "id": "Q-260105",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · IaC",
+    "question": "Зачем state locking?",
+    "answer": "Чтобы два apply не изменили инфраструктуру одновременно и не повредили state."
+  },
+  {
+    "id": "Q-260106",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · IaC",
+    "question": "count vs for_each?",
+    "answer": "count — по индексу, сдвиг индексов пересоздаёт ресурсы; for_each — по ключу, стабильнее."
+  },
+  {
+    "id": "Q-260107",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · IaC",
+    "question": "Как импортировать ресурс?",
+    "answer": "Блок import { to = ..., id = ... } + plan (или terraform import)."
+  },
+  {
+    "id": "Q-260108",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · IaC",
+    "question": "Как переименовать ресурс без пересоздания?",
+    "answer": "Блок moved { from = ..., to = ... } или terraform state mv."
+  },
+  {
+    "id": "Q-260109",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · IaC",
+    "question": "Что такое drift?",
+    "answer": "Расхождение реальности и кода из-за ручных изменений. Выявлять регулярным plan."
+  },
+  {
+    "id": "Q-260110",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · IaC",
+    "question": "Terraform vs OpenTofu?",
+    "answer": "OpenTofu — open-source (MPL) форк после перехода Terraform на BSL; совместим, есть шифрование state."
+  },
+  {
+    "id": "Q-260111",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · IaC",
+    "question": "Как организовать окружения?",
+    "answer": "Отдельные стейты/каталоги (или Terragrunt), общие модули, разные креды и аккаунты."
+  },
+  {
+    "id": "Q-260112",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · IaC",
+    "question": "Terraform vs Ansible?",
+    "answer": "Terraform — провижининг, декларативный, со state; Ansible — конфигурация, процедурно-декларативный, без state."
+  },
+  {
+    "id": "Q-260113",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · IaC",
+    "question": "Что такое идемпотентность?",
+    "answer": "Повторное применение даёт тот же результат без лишних изменений."
+  },
+  {
+    "id": "Q-260114",
+    "level": "Senior",
+    "type": "Теория",
+    "topic": "2026 · IaC",
+    "question": "Plan хочет пересоздать прод-БД — действия?",
+    "answer": "Не применять; найти атрибут с forces replacement; moved/ignore_changes/исправить код; prevent_destroy."
+  },
+  {
+    "id": "Q-260115",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Облака",
+    "question": "Region vs AZ?",
+    "answer": "Регион — география; AZ — изолированный ДЦ в регионе."
+  },
+  {
+    "id": "Q-260116",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Облака",
+    "question": "Security Group vs NACL?",
+    "answer": "SG — stateful, на инстанс, только allow; NACL — stateless, на подсеть, allow/deny."
+  },
+  {
+    "id": "Q-260117",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Облака",
+    "question": "Публичная vs приватная подсеть?",
+    "answer": "Публичная — маршрут через Internet Gateway; приватная — исходящий через NAT."
+  },
+  {
+    "id": "Q-260118",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Облака",
+    "question": "Как дать приложению доступ к S3 без ключей?",
+    "answer": "IAM-роль: instance profile / IRSA / EKS Pod Identity / workload identity."
+  },
+  {
+    "id": "Q-260119",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Облака",
+    "question": "RPO vs RTO?",
+    "answer": "RPO — допустимая потеря данных; RTO — допустимое время восстановления."
+  },
+  {
+    "id": "Q-260120",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Облака",
+    "question": "Стратегии DR?",
+    "answer": "Backup&Restore → Pilot Light → Warm Standby → Active/Active."
+  },
+  {
+    "id": "Q-260121",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Облака",
+    "question": "Как сократить расходы?",
+    "answer": "Теги/видимость, rightsizing, spot, RI/SP, автовыключение dev, lifecycle хранилища, VPC endpoints вместо NAT, ARM."
+  },
+  {
+    "id": "Q-260122",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Облака",
+    "question": "Shared responsibility?",
+    "answer": "Облако — безопасность инфраструктуры; клиент — IAM, данные, конфигурации, ОС."
+  },
+  {
+    "id": "Q-260123",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Облака",
+    "question": "Утёк облачный ключ — действия?",
+    "answer": "Деактивировать/удалить ключ, ротировать, аудит (CloudTrail), удалить созданные злоумышленником ресурсы, разбор."
+  },
+  {
+    "id": "Q-260124",
+    "level": "Senior",
+    "type": "Теория",
+    "topic": "2026 · Облака",
+    "question": "Отказоустойчивое веб-приложение в облаке?",
+    "answer": "CDN+WAF, LB в 3 AZ, автоскейлинг compute, Multi-AZ БД с репликами, кэш, бэкапы в другой регион, IaC, мониторинг."
+  },
+  {
+    "id": "Q-260125",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Observability",
+    "question": "Метрики vs логи vs трейсы?",
+    "answer": "Метрики — агрегаты во времени; логи — события; трейсы — путь запроса через сервисы."
+  },
+  {
+    "id": "Q-260126",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Observability",
+    "question": "Pull vs push мониторинг?",
+    "answer": "Prometheus тянет /metrics; push — агент отправляет (Pushgateway, OTLP)."
+  },
+  {
+    "id": "Q-260127",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Observability",
+    "question": "Типы метрик Prometheus?",
+    "answer": "Counter, Gauge, Histogram, Summary."
+  },
+  {
+    "id": "Q-260128",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Observability",
+    "question": "Histogram vs Summary?",
+    "answer": "Histogram агрегируется между инстансами (квантили на сервере); Summary — квантили на клиенте, не агрегируются."
+  },
+  {
+    "id": "Q-260129",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Observability",
+    "question": "Как посчитать p99?",
+    "answer": "histogram_quantile(0.99, sum by (le) (rate(x_bucket[5m])))."
+  },
+  {
+    "id": "Q-260130",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Observability",
+    "question": "Что такое кардинальность?",
+    "answer": "Число уникальных комбинаций лейблов = числу рядов. Высокая (user_id) убивает TSDB."
+  },
+  {
+    "id": "Q-260131",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Observability",
+    "question": "rate vs irate vs increase?",
+    "answer": "rate — средняя скорость за окно; irate — по последним 2 точкам; increase — прирост за окно."
+  },
+  {
+    "id": "Q-260132",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Observability",
+    "question": "HA и долгое хранение Prometheus?",
+    "answer": "Две реплики + Thanos/Mimir/VictoriaMetrics с объектным хранилищем."
+  },
+  {
+    "id": "Q-260133",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Observability",
+    "question": "RED vs USE?",
+    "answer": "RED — для сервисов (Rate, Errors, Duration); USE — для ресурсов (Utilization, Saturation, Errors)."
+  },
+  {
+    "id": "Q-260134",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Observability",
+    "question": "Что такое хороший алерт?",
+    "answer": "На симптом, actionable, с runbook, без шума, с for: и правильной severity."
+  },
+  {
+    "id": "Q-260135",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Observability",
+    "question": "Loki vs Elasticsearch?",
+    "answer": "Loki индексирует только лейблы — дешевле, хранение в S3; ES — полнотекстовый индекс, мощный поиск, дороже."
+  },
+  {
+    "id": "Q-260136",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Observability",
+    "question": "Что такое OpenTelemetry?",
+    "answer": "Вендор-нейтральный стандарт и SDK для метрик/логов/трейсов + Collector + протокол OTLP."
+  },
+  {
+    "id": "Q-260137",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Security",
+    "question": "SAST vs DAST vs SCA?",
+    "answer": "SAST — анализ кода; DAST — атака работающего приложения; SCA — уязвимости зависимостей."
+  },
+  {
+    "id": "Q-260138",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Security",
+    "question": "Что такое SBOM?",
+    "answer": "Перечень компонентов ПО (SPDX/CycloneDX) — для учёта и быстрого поиска уязвимостей."
+  },
+  {
+    "id": "Q-260139",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Security",
+    "question": "Зачем подписывать образы?",
+    "answer": "Гарантия происхождения и целостности; admission-контроль пускает только подписанные (cosign + Kyverno)."
+  },
+  {
+    "id": "Q-260140",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Security",
+    "question": "Как хранить секреты в K8s?",
+    "answer": "ESO + Vault/облачный SM, Sealed Secrets, SOPS; шифрование etcd, RBAC."
+  },
+  {
+    "id": "Q-260141",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · Security",
+    "question": "Что такое zero trust?",
+    "answer": "Нет доверия по сетевому периметру: каждая сущность аутентифицируется и авторизуется (mTLS, identity)."
+  },
+  {
+    "id": "Q-260142",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · Security",
+    "question": "Least privilege?",
+    "answer": "Минимально необходимые права и только на нужное время."
+  },
+  {
+    "id": "Q-260143",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · SRE",
+    "question": "SLI vs SLO vs SLA?",
+    "answer": "SLI — метрика; SLO — внутренняя цель; SLA — договор с последствиями."
+  },
+  {
+    "id": "Q-260144",
+    "level": "Junior",
+    "type": "Теория",
+    "topic": "2026 · SRE",
+    "question": "99.9% — сколько даунтайма в месяц?",
+    "answer": "≈ 43 минуты."
+  },
+  {
+    "id": "Q-260145",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · SRE",
+    "question": "Что такое error budget?",
+    "answer": "1 − SLO; допустимая ненадёжность. Исчерпан — фриз фич, работа над надёжностью."
+  },
+  {
+    "id": "Q-260146",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · SRE",
+    "question": "Что такое burn rate алерт?",
+    "answer": "Алерт на скорость сжигания бюджета ошибок в нескольких окнах (1ч/5м, 6ч/30м) — меньше шума, ловит и быстрые, и медленные проблемы."
+  },
+  {
+    "id": "Q-260147",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · SRE",
+    "question": "Первое действие при инциденте?",
+    "answer": "Восстановить сервис (mitigate: откат, failover, скейл), коммуникация; root cause — потом."
+  },
+  {
+    "id": "Q-260148",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · SRE",
+    "question": "Blameless postmortem?",
+    "answer": "Разбор без поиска виноватых: таймлайн, причины, системные улучшения, action items с владельцами."
+  },
+  {
+    "id": "Q-260149",
+    "level": "Middle",
+    "type": "Теория",
+    "topic": "2026 · SRE",
+    "question": "Зачем jitter в ретраях?",
+    "answer": "Рассинхронизировать клиентов, избежать thundering herd/retry storm."
+  },
+  {
+    "id": "Q-260150",
+    "level": "Senior",
+    "type": "Теория",
+    "topic": "2026 · SRE",
+    "question": "DevOps vs SRE vs Platform Engineering?",
+    "answer": "DevOps — культура; SRE — инженерный подход к надёжности через SLO и error budget; Platform Eng — внутренний продукт-платформа с golden paths для разработчиков."
+  },
+  {
+    "id": "Q-261001",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Linux",
+    "question": "Найди, кто съел диск",
+    "task": "Сымитируй проблему и найди её причину.\n\n```bash\n# Подготовка: процесс держит открытым удалённый файл на 500 МБ\ndd if=/dev/zero of=/tmp/big.log bs=1M count=500\ntail -f /tmp/big.log > /dev/null &\nrm /tmp/big.log\ndf -h /tmp       # место не освободилось\n```",
+    "answer": "```bash\nlsof +L1 | grep big.log           # находим PID и номер FD\n# Вариант 1: перезапустить/убить процесс\nkill <PID>\n# Вариант 2: обнулить файл, не убивая процесс\n: > /proc/<PID>/fd/<FD>\ndf -h /tmp                        # место вернулось\n```\nВывод для интервью: `rm` удаляет только имя файла; пока процесс держит дескриптор, inode и блоки живы. Поэтому logrotate использует `copytruncate` или отправляет сигнал HUP."
+  },
+  {
+    "id": "Q-261002",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Linux",
+    "question": "Кончились inode",
+    "task": "```bash\nmkdir /tmp/inodes && cd /tmp/inodes\nfor i in $(seq 1 200000); do : > f$i; done\n```\nКак обнаружить проблему и найти каталог-виновник?",
+    "answer": "```bash\ndf -i                                                    # IUse% близок к 100%\n# Каталоги с наибольшим числом файлов\nfind / -xdev -printf '%h\\n' 2>/dev/null | sort | uniq -c | sort -rn | head\n# Удалить быстро (rm * упадёт с \"Argument list too long\")\nfind /tmp/inodes -type f -delete\n```\nТипичные виновники в проде: сессии PHP, кэш, очереди почты, мелкие файлы от cron."
+  },
+  {
+    "id": "Q-261003",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Linux",
+    "question": "Systemd-сервис с автоперезапуском",
+    "task": "Напиши юнит для скрипта `/opt/app/app.sh`. Требования: запуск от пользователя `app`, перезапуск при падении не чаще 5 раз за минуту, лимит памяти 200 МБ, логи в journald.",
+    "answer": "```ini\n# /etc/systemd/system/app.service\n[Unit]\nDescription=Demo app\nAfter=network-online.target\nWants=network-online.target\nStartLimitIntervalSec=60\nStartLimitBurst=5\n\n[Service]\nType=simple\nUser=app\nExecStart=/opt/app/app.sh\nRestart=on-failure\nRestartSec=3\nMemoryMax=200M\nNoNewPrivileges=true\nProtectSystem=strict\nPrivateTmp=true\nStandardOutput=journal\nStandardError=journal\n\n[Install]\nWantedBy=multi-user.target\n```\n```bash\nuseradd -r -s /usr/sbin/nologin app\nsystemctl daemon-reload && systemctl enable --now app\njournalctl -u app -f\nsystemctl show app -p NRestarts\n```"
+  },
+  {
+    "id": "Q-261004",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Linux",
+    "question": "Процесс грузит CPU — найди, что он делает",
+    "task": "```bash\n# Подготовка\npython3 -c \"while True: pass\" &\n```",
+    "answer": "```bash\ntop -o %CPU                 # находим PID\npidstat -p <PID> 1          # подтверждаем\ncat /proc/<PID>/cmdline | tr '\\0' ' '\nls -l /proc/<PID>/cwd       # рабочий каталог\nstrace -p <PID> -c          # какие системные вызовы (тут почти нет — чистый счёт)\nperf top -p <PID>           # горячие функции\n# Для Java: jstack, для Python: py-spy dump --pid <PID>\n```\nОтличай: много `user` — код считает; много `sys` — системные вызовы; `wa` — ждём диск; `st` — гипервизор забирает CPU (шумный сосед)."
+  },
+  {
+    "id": "Q-261005",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Linux",
+    "question": "Права и SUID",
+    "task": "Пользователь `dev` должен иметь возможность перезапускать только `nginx` через sudo, без пароля и без root-шелла.",
+    "answer": "```bash\nvisudo -f /etc/sudoers.d/dev-nginx\n# содержимое:\ndev ALL=(root) NOPASSWD: /usr/bin/systemctl restart nginx, /usr/bin/systemctl status nginx\n```\nЛовушка: нельзя разрешать `systemctl *`, `vim`, `less`, `find` — из них можно получить шелл (см. GTFOBins)."
+  },
+  {
+    "id": "Q-261006",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Linux",
+    "question": "Ротация логов приложения",
+    "task": "Логи `/var/log/myapp/*.log` растут бесконечно. Настрой хранение 14 дней, сжатие, ежедневную ротацию без перезапуска приложения.",
+    "answer": "```conf\n# /etc/logrotate.d/myapp\n/var/log/myapp/*.log {\n    daily\n    rotate 14\n    compress\n    delaycompress\n    missingok\n    notifempty\n    copytruncate\n    maxsize 500M\n}\n```\n```bash\nlogrotate -d /etc/logrotate.d/myapp     # dry-run\nlogrotate -f /etc/logrotate.d/myapp     # принудительно\n```\nЛучше вместо `copytruncate` — `postrotate kill -HUP $(cat /run/myapp.pid)`, если приложение умеет переоткрывать файл (copytruncate может потерять пару строк)."
+  },
+  {
+    "id": "Q-261007",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Linux",
+    "question": "Разовая и периодическая задачи",
+    "task": "Запускать бэкап каждый день в 03:15, но не допустить параллельного запуска, если предыдущий ещё идёт.",
+    "answer": "```bash\n# crontab -e\n15 3 * * * /usr/bin/flock -n /run/backup.lock /opt/backup.sh >> /var/log/backup.log 2>&1\n```\nАльтернатива — systemd timer (`OnCalendar=*-*-* 03:15:00`, `Persistent=true` — запустит пропущенный запуск после перезагрузки). В K8s — `CronJob` с `concurrencyPolicy: Forbid`."
+  },
+  {
+    "id": "Q-261008",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Сети",
+    "question": "Разложи медленный HTTP-запрос по этапам",
+    "task": "",
+    "answer": "```bash\ncat > curl-format.txt <<'EOF'\n    dns:  %{time_namelookup}s\nconnect:  %{time_connect}s\n    tls:  %{time_appconnect}s\n   ttfb:  %{time_starttransfer}s\n  total:  %{time_total}s\n   code:  %{http_code}\nEOF\ncurl -o /dev/null -s -w @curl-format.txt https://github.com\n```\nИнтерпретация: большой `dns` → проблемы резолвера; большой `connect` → сеть/далёкий сервер/SYN-очередь; большой `tls` → handshake, OCSP; большой разрыв `ttfb − tls` → медленный бэкенд."
+  },
+  {
+    "id": "Q-261009",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Сети",
+    "question": "Порт не отвечает — пошаговая диагностика",
+    "task": "Сервис на `10.0.0.5:8080` недоступен с соседнего сервера.",
+    "answer": "```bash\n# На клиенте\nping -c3 10.0.0.5              # L3 (ICMP может быть закрыт — это не приговор)\nnc -zv -w3 10.0.0.5 8080       # TCP: refused = хост жив, порт закрыт; timeout = фильтрует файрвол\ntraceroute -T -p 8080 10.0.0.5\n# На сервере\nss -ltnp | grep 8080           # слушает? на 127.0.0.1 или 0.0.0.0?\niptables -S ; nft list ruleset\ntcpdump -i any -nn port 8080   # доходят ли SYN\n```\nЧастая причина: приложение слушает `127.0.0.1` вместо `0.0.0.0`; в облаке — Security Group."
+  },
+  {
+    "id": "Q-261010",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Сети",
+    "question": "Расчёт подсетей",
+    "task": "VPC `10.10.0.0/16`. Нужны 3 публичные и 3 приватные подсети по зонам, в приватных — до 4000 адресов.",
+    "answer": "| Подсеть | CIDR | Адресов |\n|---------|------|---------|\n| private-a | 10.10.0.0/20 | 4096 |\n| private-b | 10.10.16.0/20 | 4096 |\n| private-c | 10.10.32.0/20 | 4096 |\n| public-a | 10.10.48.0/24 | 256 |\n| public-b | 10.10.49.0/24 | 256 |\n| public-c | 10.10.50.0/24 | 256 |\n\nВ Terraform: `cidrsubnet(\"10.10.0.0/16\", 4, 0)` → `10.10.0.0/20`. Помни: облако резервирует 3–5 адресов в каждой подсети; EKS с VPC CNI съедает по IP на под — планируй с запасом."
+  },
+  {
+    "id": "Q-261011",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Сети",
+    "question": "Проверка TLS-сертификата",
+    "task": "Узнай, когда истекает сертификат сайта, и напиши проверку для cron, которая предупредит за 14 дней.",
+    "answer": "```bash\nhost=github.com\nopenssl s_client -connect $host:443 -servername $host </dev/null 2>/dev/null \\\n  | openssl x509 -noout -dates -subject -issuer\n\n# Проверка: вернёт ненулевой код, если истекает в ближайшие 14 дней\nopenssl s_client -connect $host:443 -servername $host </dev/null 2>/dev/null \\\n  | openssl x509 -noout -checkend $((14*86400)) || echo \"ALERT: $host сертификат скоро истекает\"\n```\nВ проде — blackbox_exporter и алерт `probe_ssl_earliest_cert_expiry - time() < 14*86400`."
+  },
+  {
+    "id": "Q-261012",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Docker",
+    "question": "Исправь плохой Dockerfile",
+    "task": "```dockerfile\nFROM python:latest\nADD . /app\nWORKDIR /app\nRUN apt-get update\nRUN apt-get install -y gcc\nRUN pip install -r requirements.txt\nENV API_KEY=sk-123456\nEXPOSE 8000\nCMD python app.py\n```",
+    "answer": "Проблемы: `latest`; `ADD .` до зависимостей ломает кэш; `update` и `install` в разных слоях; gcc в финальном образе; секрет в ENV навсегда в слое; root; shell-форма CMD (сигналы не доходят); нет `.dockerignore`.\n\n```dockerfile\n# syntax=docker/dockerfile:1\nFROM python:3.12-slim AS build\nWORKDIR /app\nRUN apt-get update && apt-get install -y --no-install-recommends gcc \\\n    && rm -rf /var/lib/apt/lists/*\nCOPY requirements.txt .\nRUN --mount=type=cache,target=/root/.cache/pip \\\n    pip install --prefix=/install -r requirements.txt\n\nFROM python:3.12-slim\nENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1\nRUN useradd --create-home --uid 10001 app\nWORKDIR /app\nCOPY --from=build /install /usr/local\nCOPY --chown=app:app . .\nUSER app\nEXPOSE 8000\nCMD [\"python\", \"app.py\"]\n```"
+  },
+  {
+    "id": "Q-261013",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Docker",
+    "question": "Почему контейнер останавливается 10 секунд?",
+    "task": "```bash\ndocker run -d --name slow alpine sh -c \"sleep 3600\"\ntime docker stop slow   # ~10 секунд\n```",
+    "answer": "PID 1 внутри — `sh`, у PID 1 нет обработчиков сигналов по умолчанию, SIGTERM игнорируется → через 10 с Docker шлёт SIGKILL.\n\n```bash\ndocker run -d --init --name fast alpine sleep 3600   # tini как PID 1\ntime docker stop fast                               # мгновенно\n```\nВ своём образе: exec-форма `CMD [\"app\"]`, `exec \"$@\"` в entrypoint-скриптах, обработка SIGTERM в коде, либо `tini`/`dumb-init`."
+  },
+  {
+    "id": "Q-261014",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Docker",
+    "question": "Ограничь ресурсы и поймай OOM",
+    "task": "",
+    "answer": "```bash\ndocker run --name oom -m 64m python:3.12-slim \\\n  python -c \"a = bytearray(200*1024*1024)\"\ndocker inspect oom --format '{{.State.OOMKilled}} {{.State.ExitCode}}'   # true 137\ndocker stats --no-stream\n```\nExit 137 = 128 + 9 (SIGKILL). Тот же механизм — `OOMKilled` в Kubernetes."
+  },
+  {
+    "id": "Q-261015",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Docker",
+    "question": "docker compose: приложение + PostgreSQL + Redis",
+    "task": "Подними стек, где приложение стартует только после того, как БД реально готова.",
+    "answer": "```yaml\nservices:\n  db:\n    image: postgres:16-alpine\n    environment:\n      POSTGRES_PASSWORD: example\n    volumes: [pgdata:/var/lib/postgresql/data]\n    healthcheck:\n      test: [\"CMD-SHELL\", \"pg_isready -U postgres\"]\n      interval: 5s\n      retries: 10\n  redis:\n    image: redis:7-alpine\n  app:\n    image: ghcr.io/example/app:1.0\n    environment:\n      DATABASE_URL: postgres://postgres:example@db:5432/postgres\n      REDIS_URL: redis://redis:6379\n    ports: [\"8080:8080\"]\n    depends_on:\n      db: { condition: service_healthy }\n      redis: { condition: service_started }\n    restart: unless-stopped\nvolumes:\n  pgdata:\n```\nКлючевое — `depends_on.condition: service_healthy`; без healthcheck `depends_on` ждёт только старта контейнера, а не готовности БД."
+  },
+  {
+    "id": "Q-261016",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Docker",
+    "question": "Просканируй образ и подпиши его",
+    "task": "",
+    "answer": "```bash\ntrivy image --severity HIGH,CRITICAL --exit-code 1 nginx:1.25    # в CI упадёт при находках\nsyft nginx:1.27 -o cyclonedx-json > sbom.json                    # SBOM\ncosign generate-key-pair\ncosign sign --key cosign.key registry.example.com/app@sha256:<digest>\ncosign verify --key cosign.pub registry.example.com/app@sha256:<digest>\n```\nПодписывай digest, а не тег — тег можно перезаписать."
+  },
+  {
+    "id": "Q-261017",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Kubernetes",
+    "question": "Найди 10 ошибок в манифесте",
+    "task": "```yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: web\nspec:\n  replicas: 1\n  selector:\n    matchLabels:\n      app: web\n  template:\n    metadata:\n      labels:\n        app: website\n    spec:\n      containers:\n        - name: web\n          image: nginx:latest\n          ports:\n            - containerPort: 80\n          env:\n            - name: DB_PASSWORD\n              value: \"SuperSecret123\"\n          livenessProbe:\n            httpGet:\n              path: /healthz\n              port: 8080\n            periodSeconds: 1\n            failureThreshold: 1\n---\napiVersion: v1\nkind: Service\nmetadata:\n  name: web\nspec:\n  selector:\n    app: web\n  ports:\n    - port: 80\n      targetPort: 8080\n```",
+    "answer": "1. Лейблы шаблона `website` ≠ selector `web` — API отклонит Deployment.\n2. `replicas: 1` — нет отказоустойчивости.\n3. `nginx:latest` — невоспроизводимо.\n4. Пароль открытым текстом → Secret / ESO.\n5. Liveness на порт 8080, а контейнер слушает 80; `/healthz` у nginx нет.\n6. Агрессивная liveness (1 с / 1 попытка) → рестарты по кругу.\n7. Нет readinessProbe.\n8. Нет resources → QoS BestEffort.\n9. Service `targetPort: 8080` ≠ `containerPort: 80`.\n10. Нет securityContext (root, writable FS).\n\n```yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: web\nspec:\n  replicas: 3\n  selector:\n    matchLabels: { app: web }\n  strategy:\n    rollingUpdate: { maxSurge: 1, maxUnavailable: 0 }\n  template:\n    metadata:\n      labels: { app: web }\n    spec:\n      topologySpreadConstraints:\n        - maxSkew: 1\n          topologyKey: kubernetes.io/hostname\n          whenUnsatisfiable: ScheduleAnyway\n          labelSelector: { matchLabels: { app: web } }\n      securityContext: { runAsNonRoot: true, seccompProfile: { type: RuntimeDefault } }\n      containers:\n        - name: web\n          image: nginxinc/nginx-unprivileged:1.27-alpine\n          ports: [{ containerPort: 8080 }]\n          env:\n            - name: DB_PASSWORD\n              valueFrom: { secretKeyRef: { name: web-db, key: password } }\n          readinessProbe:\n            httpGet: { path: /, port: 8080 }\n            periodSeconds: 5\n          livenessProbe:\n            httpGet: { path: /, port: 8080 }\n            initialDelaySeconds: 10\n            periodSeconds: 10\n            failureThreshold: 3\n          resources:\n            requests: { cpu: 50m, memory: 64Mi }\n            limits: { memory: 64Mi }\n          securityContext:\n            allowPrivilegeEscalation: false\n            capabilities: { drop: [ALL] }\n          lifecycle:\n            preStop: { exec: { command: [\"sleep\", \"5\"] } }\n---\napiVersion: v1\nkind: Service\nmetadata:\n  name: web\nspec:\n  selector: { app: web }\n  ports: [{ port: 80, targetPort: 8080 }]\n---\napiVersion: policy/v1\nkind: PodDisruptionBudget\nmetadata:\n  name: web\nspec:\n  minAvailable: 2\n  selector: { matchLabels: { app: web } }\n```"
+  },
+  {
+    "id": "Q-261018",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Kubernetes",
+    "question": "Почини CrashLoopBackOff",
+    "task": "```bash\nkubectl create deployment crash --image=busybox -- sh -c \"echo starting; exit 1\"\nkubectl get pods -w\n```",
+    "answer": "```bash\nkubectl describe pod -l app=crash      # Last State: Terminated, Exit Code: 1, Back-off restarting\nkubectl logs -l app=crash --previous   # \"starting\"\nkubectl get events --sort-by=.lastTimestamp | tail\n# Исправляем команду\nkubectl patch deploy crash --type=json \\\n  -p='[{\"op\":\"replace\",\"path\":\"/spec/template/spec/containers/0/command\",\"value\":[\"sh\",\"-c\",\"echo ok; sleep 3600\"]}]'\nkubectl rollout status deploy/crash\n```\nРасшифровка exit code: 1 — ошибка приложения; 126/127 — нет прав / команда не найдена; 137 — SIGKILL/OOM; 143 — SIGTERM."
+  },
+  {
+    "id": "Q-261019",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Kubernetes",
+    "question": "Под висит в Pending",
+    "task": "```bash\nkubectl run big --image=nginx --overrides='{\"spec\":{\"containers\":[{\"name\":\"big\",\"image\":\"nginx\",\"resources\":{\"requests\":{\"cpu\":\"100\",\"memory\":\"1Ti\"}}}]}}'\n```",
+    "answer": "```bash\nkubectl describe pod big | sed -n '/Events/,$p'\n# 0/1 nodes are available: 1 Insufficient cpu, 1 Insufficient memory\nkubectl describe nodes | grep -A5 \"Allocated resources\"\nkubectl delete pod big\n```\nЧек-лист Pending: ресурсы → taints/tolerations → nodeSelector/affinity → PVC не связан (StorageClass, зона) → ResourceQuota → лимит подов на ноде (110) → нет IP в подсети."
+  },
+  {
+    "id": "Q-261020",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Kubernetes",
+    "question": "Service не отвечает",
+    "task": "```bash\nkubectl create deployment api --image=nginx --replicas=2\nkubectl expose deployment api --port=80 --target-port=8080\nkubectl run tmp --rm -it --image=curlimages/curl -- curl -m3 http://api\n```",
+    "answer": "```bash\nkubectl get endpointslices -l kubernetes.io/service-name=api   # endpoints есть, но порт 8080\nkubectl get svc api -o yaml | grep -A3 ports\nkubectl get pods -l app=api -o jsonpath='{..containerPort}'      # 80\nkubectl patch svc api -p '{\"spec\":{\"ports\":[{\"port\":80,\"targetPort\":80}]}}'\n```\nПорядок проверки: селектор совпадает с лейблами → endpoints не пустые → `targetPort` верный → поды Ready → NetworkPolicy → DNS (`nslookup api` из пода)."
+  },
+  {
+    "id": "Q-261021",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Kubernetes",
+    "question": "Zero-downtime rolling update и откат",
+    "task": "",
+    "answer": "```bash\nkubectl create deployment web --image=nginx:1.26 --replicas=4\nkubectl set image deploy/web nginx=nginx:1.27\nkubectl rollout status deploy/web\nkubectl rollout history deploy/web\nkubectl set image deploy/web nginx=nginx:does-not-exist   # сломали\nkubectl rollout status deploy/web --timeout=60s           # зависнет\nkubectl rollout undo deploy/web\nkubectl annotate deploy/web kubernetes.io/change-cause=\"rollback after bad image\"\n```\nБлагодаря `maxUnavailable` старые поды не удаляются, пока новые не стали Ready, поэтому сломанный образ не уронил сервис."
+  },
+  {
+    "id": "Q-261022",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Kubernetes",
+    "question": "ConfigMap, Secret и обновление конфигурации",
+    "task": "Прокинь конфиг файлом и секрет переменной. Как сделать так, чтобы поды перезапустились при изменении ConfigMap?",
+    "answer": "```bash\nkubectl create configmap app-cfg --from-literal=LOG_LEVEL=info --from-file=app.yaml\nkubectl create secret generic app-sec --from-literal=DB_PASSWORD='s3cr3t'\n```\n```yaml\nspec:\n  template:\n    metadata:\n      annotations:\n        checksum/config: \"{{ include (print $.Template.BasePath \\\"/configmap.yaml\\\") . | sha256sum }}\"  # Helm\n    spec:\n      containers:\n        - name: app\n          envFrom: [{ secretRef: { name: app-sec } }]\n          volumeMounts: [{ name: cfg, mountPath: /etc/app }]\n      volumes:\n        - name: cfg\n          configMap: { name: app-cfg }\n```\nФакты: файлы из смонтированного ConfigMap обновляются сами (до ~1 мин), env — нет (нужен рестарт). Способы рестарта: хеш-аннотация в Helm, `kubectl rollout restart`, Reloader (stakater). При `subPath` файл не обновляется."
+  },
+  {
+    "id": "Q-261023",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Kubernetes",
+    "question": "HPA под нагрузкой",
+    "task": "",
+    "answer": "```bash\n# metrics-server для kind\nkubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml\nkubectl patch deploy metrics-server -n kube-system --type=json \\\n  -p='[{\"op\":\"add\",\"path\":\"/spec/template/spec/containers/0/args/-\",\"value\":\"--kubelet-insecure-tls\"}]'\n\nkubectl create deployment php --image=registry.k8s.io/hpa-example\nkubectl set resources deploy php --requests=cpu=200m\nkubectl expose deploy php --port=80\nkubectl autoscale deploy php --cpu-percent=50 --min=1 --max=10\nkubectl run load --rm -it --image=busybox -- sh -c \"while true; do wget -q -O- http://php; done\"\nkubectl get hpa -w\n```\nБез `requests.cpu` HPA по CPU не работает (процент считается от requests)."
+  },
+  {
+    "id": "Q-261024",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Kubernetes",
+    "question": "NetworkPolicy: default deny",
+    "task": "Разреши трафик к `db` только из подов `app=api` на порт 5432.",
+    "answer": "```yaml\napiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata: { name: default-deny, namespace: prod }\nspec:\n  podSelector: {}\n  policyTypes: [Ingress]\n---\napiVersion: networking.k8s.io/v1\nkind: NetworkPolicy\nmetadata: { name: db-from-api, namespace: prod }\nspec:\n  podSelector: { matchLabels: { app: db } }\n  policyTypes: [Ingress]\n  ingress:\n    - from:\n        - podSelector: { matchLabels: { app: api } }\n      ports:\n        - { protocol: TCP, port: 5432 }\n```\nЛовушки: в kind по умолчанию CNI (kindnet) не применяет NetworkPolicy — нужен Calico/Cilium. Если делаешь default deny для Egress, не забудь разрешить DNS (UDP/TCP 53 к kube-dns)."
+  },
+  {
+    "id": "Q-261025",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Kubernetes",
+    "question": "RBAC для CI-бота",
+    "task": "ServiceAccount `deployer` в namespace `staging` должен уметь обновлять Deployment'ы и смотреть поды, но не читать Secret'ы.",
+    "answer": "```yaml\napiVersion: v1\nkind: ServiceAccount\nmetadata: { name: deployer, namespace: staging }\n---\napiVersion: rbac.authorization.k8s.io/v1\nkind: Role\nmetadata: { name: deployer, namespace: staging }\nrules:\n  - apiGroups: [\"apps\"]\n    resources: [\"deployments\"]\n    verbs: [\"get\", \"list\", \"watch\", \"patch\", \"update\"]\n  - apiGroups: [\"\"]\n    resources: [\"pods\", \"pods/log\"]\n    verbs: [\"get\", \"list\", \"watch\"]\n---\napiVersion: rbac.authorization.k8s.io/v1\nkind: RoleBinding\nmetadata: { name: deployer, namespace: staging }\nsubjects: [{ kind: ServiceAccount, name: deployer, namespace: staging }]\nroleRef: { kind: Role, name: deployer, apiGroup: rbac.authorization.k8s.io }\n```\n```bash\nkubectl auth can-i patch deploy -n staging --as=system:serviceaccount:staging:deployer   # yes\nkubectl auth can-i get secrets -n staging --as=system:serviceaccount:staging:deployer   # no\nkubectl create token deployer -n staging --duration=1h                                   # короткоживущий токен\n```"
+  },
+  {
+    "id": "Q-261026",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · CI/CD",
+    "question": "Полный пайплайн GitHub Actions",
+    "task": "Тесты → сборка образа → скан Trivy → push в GHCR только из `main` → деплой через обновление тега в репозитории конфигурации (GitOps).",
+    "answer": "```yaml\nname: ci\non:\n  push: { branches: [main] }\n  pull_request:\nconcurrency: { group: ci-${{ github.ref }}, cancel-in-progress: true }\npermissions: { contents: read, packages: write }\n\njobs:\n  test:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with: { python-version: \"3.12\", cache: pip }\n      - run: pip install -r requirements.txt && pytest -q\n\n  build:\n    needs: test\n    runs-on: ubuntu-latest\n    outputs: { image: ${{ steps.meta.outputs.image }} }\n    steps:\n      - uses: actions/checkout@v4\n      - id: meta\n        run: echo \"image=ghcr.io/${GITHUB_REPOSITORY,,}:${GITHUB_SHA::7}\" >> \"$GITHUB_OUTPUT\"\n      - uses: docker/setup-buildx-action@v3\n      - uses: docker/login-action@v3\n        with: { registry: ghcr.io, username: ${{ github.actor }}, password: ${{ secrets.GITHUB_TOKEN }} }\n      - uses: docker/build-push-action@v6\n        with:\n          load: true\n          tags: ${{ steps.meta.outputs.image }}\n          cache-from: type=gha\n          cache-to: type=gha,mode=max\n      - uses: aquasecurity/trivy-action@master\n        with: { image-ref: \"${{ steps.meta.outputs.image }}\", severity: \"CRITICAL,HIGH\", exit-code: \"1\", ignore-unfixed: true }\n      - if: github.ref == 'refs/heads/main'\n        run: docker push ${{ steps.meta.outputs.image }}\n\n  deploy:\n    if: github.ref == 'refs/heads/main'\n    needs: build\n    runs-on: ubuntu-latest\n    environment: production\n    steps:\n      - uses: actions/checkout@v4\n        with: { repository: my-org/gitops, token: ${{ secrets.GITOPS_TOKEN }} }\n      - run: |\n          yq -i '.image.tag = \"${{ github.sha }}\"' apps/api/values-prod.yaml\n          git config user.name ci-bot && git config user.email ci@example.com\n          git commit -am \"api: deploy ${GITHUB_SHA::7}\" && git push\n```\nНа собеседовании объясни: `concurrency` отменяет устаревшие запуски, `environment` даёт ручной approve, Argo CD сам подтянет изменение из gitops-репо. В проде пинни actions по SHA."
+  },
+  {
+    "id": "Q-261027",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · CI/CD",
+    "question": "GitLab CI: шаблоны и окружения",
+    "task": "Вынеси общий шаблон деплоя и используй его для stage (автоматически) и prod (вручную, только по тегу).",
+    "answer": "```yaml\nstages: [build, deploy]\n\n.deploy_tpl:\n  stage: deploy\n  image: alpine/helm:3.16.2\n  script:\n    - helm upgrade --install api ./chart -n $KUBE_NS\n        --set image.tag=$CI_COMMIT_SHORT_SHA --atomic --wait --timeout 5m\n\nbuild:\n  stage: build\n  image: docker:27\n  services: [docker:27-dind]\n  script:\n    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY\n    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA .\n    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA\n\ndeploy_stage:\n  extends: .deploy_tpl\n  variables: { KUBE_NS: staging }\n  environment: { name: staging, url: https://stage.example.com }\n  rules: [{ if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH }]\n\ndeploy_prod:\n  extends: .deploy_tpl\n  variables: { KUBE_NS: production }\n  environment: { name: production, url: https://example.com }\n  rules: [{ if: $CI_COMMIT_TAG, when: manual }]\n```\n`--atomic` откатит релиз Helm, если поды не стали Ready."
+  },
+  {
+    "id": "Q-261028",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · CI/CD",
+    "question": "Argo CD Application",
+    "task": "",
+    "answer": "```yaml\napiVersion: argoproj.io/v1alpha1\nkind: Application\nmetadata:\n  name: api-prod\n  namespace: argocd\nspec:\n  project: default\n  source:\n    repoURL: https://github.com/my-org/gitops.git\n    targetRevision: main\n    path: apps/api\n    helm: { valueFiles: [values-prod.yaml] }\n  destination:\n    server: https://kubernetes.default.svc\n    namespace: production\n  syncPolicy:\n    automated: { prune: true, selfHeal: true }\n    syncOptions: [CreateNamespace=true]\n```\n`selfHeal` вернёт ручные правки в кластере к состоянию из Git; `prune` удалит ресурсы, которых больше нет в Git. Для множества кластеров/сервисов — `ApplicationSet`."
+  },
+  {
+    "id": "Q-261029",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · IaC",
+    "question": "Модуль VPC с подсетями по зонам",
+    "task": "",
+    "answer": "```hcl\n# modules/vpc/variables.tf\nvariable \"name\" { type = string }\nvariable \"cidr\" { type = string }\nvariable \"azs\"  { type = list(string) }\n\n# modules/vpc/main.tf\nresource \"aws_vpc\" \"this\" {\n  cidr_block           = var.cidr\n  enable_dns_hostnames = true\n  tags                 = { Name = var.name }\n}\n\nresource \"aws_subnet\" \"private\" {\n  for_each          = { for i, az in var.azs : az => i }\n  vpc_id            = aws_vpc.this.id\n  availability_zone = each.key\n  cidr_block        = cidrsubnet(var.cidr, 4, each.value)\n  tags              = { Name = \"${var.name}-private-${each.key}\" }\n}\n\nresource \"aws_subnet\" \"public\" {\n  for_each                = { for i, az in var.azs : az => i }\n  vpc_id                  = aws_vpc.this.id\n  availability_zone       = each.key\n  cidr_block              = cidrsubnet(var.cidr, 8, 48 + each.value)\n  map_public_ip_on_launch = true\n  tags                    = { Name = \"${var.name}-public-${each.key}\" }\n}\n\n# modules/vpc/outputs.tf\noutput \"private_subnet_ids\" { value = [for s in aws_subnet.private : s.id] }\n\n# envs/prod/main.tf\nmodule \"vpc\" {\n  source = \"../../modules/vpc\"\n  name   = \"prod\"\n  cidr   = \"10.10.0.0/16\"\n  azs    = [\"eu-central-1a\", \"eu-central-1b\", \"eu-central-1c\"]\n}\n```\nПочему `for_each` по зоне: удаление зоны из списка не пересоздаст остальные подсети (с `count` индексы бы сдвинулись)."
+  },
+  {
+    "id": "Q-261030",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · IaC",
+    "question": "Рефакторинг без пересоздания и импорт",
+    "task": "1) Ресурс `aws_s3_bucket.logs` переименовали в `aws_s3_bucket.audit_logs`. 2) Бакет `legacy-data` создан руками — заведи его под Terraform.",
+    "answer": "```hcl\nmoved {\n  from = aws_s3_bucket.logs\n  to   = aws_s3_bucket.audit_logs\n}\n\nimport {\n  to = aws_s3_bucket.legacy\n  id = \"legacy-data\"\n}\n\nresource \"aws_s3_bucket\" \"legacy\" {\n  bucket = \"legacy-data\"\n  lifecycle { prevent_destroy = true }\n}\n```\n```bash\nterraform plan -generate-config-out=generated.tf   # TF 1.5+ сгенерирует код для import\nterraform plan                                     # 0 to add, 0 to destroy — цель\n```"
+  },
+  {
+    "id": "Q-261031",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · IaC",
+    "question": "Remote state с блокировкой",
+    "task": "",
+    "answer": "```hcl\nterraform {\n  backend \"s3\" {\n    bucket       = \"acme-tf-state\"\n    key          = \"prod/network/terraform.tfstate\"\n    region       = \"eu-central-1\"\n    encrypt      = true\n    use_lockfile = true      # TF 1.10+: блокировка через S3, DynamoDB не нужен\n  }\n}\n```\nБакет state: версионирование ON, шифрование KMS, блок публичного доступа, доступ только CI-роли. Чтобы читать outputs другого стейта — `data \"terraform_remote_state\"` (а лучше — передавать значения через SSM/параметры, чтобы не связывать стейты жёстко)."
+  },
+  {
+    "id": "Q-261032",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · IaC",
+    "question": "Ansible-роль: nginx + пользователь + firewall",
+    "task": "",
+    "answer": "```yaml\n# inventory.ini\n[web]\n10.0.0.11\n10.0.0.12\n\n# site.yml\n- hosts: web\n  become: true\n  vars:\n    deploy_user: deploy\n    deploy_key: \"{{ lookup('file', '~/.ssh/id_ed25519.pub') }}\"\n  tasks:\n    - name: Пользователь для деплоя\n      ansible.builtin.user: { name: \"{{ deploy_user }}\", shell: /bin/bash, groups: sudo, append: true }\n\n    - name: SSH-ключ\n      ansible.posix.authorized_key: { user: \"{{ deploy_user }}\", key: \"{{ deploy_key }}\" }\n\n    - name: Запрет входа по паролю\n      ansible.builtin.lineinfile:\n        path: /etc/ssh/sshd_config\n        regexp: '^#?PasswordAuthentication'\n        line: 'PasswordAuthentication no'\n        validate: 'sshd -t -f %s'\n      notify: restart ssh\n\n    - name: Пакеты\n      ansible.builtin.apt: { name: [nginx, ufw], state: present, update_cache: true, cache_valid_time: 3600 }\n\n    - name: Firewall\n      community.general.ufw: { rule: allow, port: \"{{ item }}\", proto: tcp }\n      loop: [\"22\", \"80\", \"443\"]\n\n    - name: Включить ufw\n      community.general.ufw: { state: enabled, policy: deny }\n\n  handlers:\n    - name: restart ssh\n      ansible.builtin.service: { name: ssh, state: restarted }\n```\n```bash\nansible-playbook -i inventory.ini site.yml --check --diff   # dry-run\nansible-playbook -i inventory.ini site.yml                  # второй запуск должен дать changed=0\n```\n`validate: sshd -t` не даст записать сломанный конфиг и потерять доступ к серверу."
+  },
+  {
+    "id": "Q-261033",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Observability",
+    "question": "Мини-стенд Prometheus + Grafana",
+    "task": "",
+    "answer": "```yaml\n# docker-compose.yml\nservices:\n  node-exporter:\n    image: prom/node-exporter:v1.8.2\n  prometheus:\n    image: prom/prometheus:v3.0.1\n    volumes:\n      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro\n      - ./alerts.yml:/etc/prometheus/alerts.yml:ro\n    ports: [\"9090:9090\"]\n  grafana:\n    image: grafana/grafana:11.3.0\n    environment: { GF_SECURITY_ADMIN_PASSWORD: admin }\n    ports: [\"3000:3000\"]\n```\n```yaml\n# prometheus.yml\nglobal: { scrape_interval: 15s }\nrule_files: [/etc/prometheus/alerts.yml]\nscrape_configs:\n  - job_name: node\n    static_configs: [{ targets: [\"node-exporter:9100\"] }]\n```\n```yaml\n# alerts.yml\ngroups:\n  - name: node\n    rules:\n      - alert: TargetDown\n        expr: up == 0\n        for: 1m\n        labels: { severity: critical }\n      - alert: HighCPU\n        expr: 100 - avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100 > 85\n        for: 10m\n        labels: { severity: warning }\n      - alert: DiskWillFillIn4h\n        expr: predict_linear(node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay\"}[6h], 4*3600) < 0\n        for: 30m\n        labels: { severity: warning }\n```\nДальше: в Grafana добавь datasource `http://prometheus:9090`, импортируй дашборд Node Exporter Full (ID 1860), нагрузи CPU (`docker run --rm alpine sh -c \"yes > /dev/null\"`) и посмотри алерт на `/alerts`."
+  },
+  {
+    "id": "Q-261034",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Observability",
+    "question": "Напиши 8 запросов PromQL",
+    "task": "1. Использование памяти ноды в %. 2. Использование диска `/` в %. 3. RPS по сервисам. 4. Доля 5xx. 5. p95 latency по эндпоинтам. 6. Поды, рестартовавшие за час. 7. Поды с CPU throttling > 25%. 8. Использование памяти пода относительно лимита.",
+    "answer": "```promql\n# 1\n(1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100\n# 2\n(1 - node_filesystem_avail_bytes{mountpoint=\"/\"} / node_filesystem_size_bytes{mountpoint=\"/\"}) * 100\n# 3\nsum by (service) (rate(http_requests_total[5m]))\n# 4\nsum(rate(http_requests_total{code=~\"5..\"}[5m])) / sum(rate(http_requests_total[5m]))\n# 5\nhistogram_quantile(0.95, sum by (le, handler) (rate(http_request_duration_seconds_bucket[5m])))\n# 6\nincrease(kube_pod_container_status_restarts_total[1h]) > 0\n# 7\nsum by (pod) (rate(container_cpu_cfs_throttled_periods_total[5m]))\n  / sum by (pod) (rate(container_cpu_cfs_periods_total[5m])) > 0.25\n# 8\nsum by (pod) (container_memory_working_set_bytes{container!=\"\"})\n  / sum by (pod) (kube_pod_container_resource_limits{resource=\"memory\"})\n```\n`working_set_bytes` — то, на что смотрит OOM killer, а не `usage_bytes` (включает кэш)."
+  },
+  {
+    "id": "Q-261035",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Observability",
+    "question": "SLO-алерт по burn rate",
+    "task": "SLO: 99.9% успешных запросов за 30 дней. Напиши быстрый и медленный алерты.",
+    "answer": "```yaml\ngroups:\n  - name: slo-api\n    rules:\n      - record: slo:error_ratio:rate5m\n        expr: sum(rate(http_requests_total{job=\"api\",code=~\"5..\"}[5m])) / sum(rate(http_requests_total{job=\"api\"}[5m]))\n      - record: slo:error_ratio:rate1h\n        expr: sum(rate(http_requests_total{job=\"api\",code=~\"5..\"}[1h])) / sum(rate(http_requests_total{job=\"api\"}[1h]))\n      - record: slo:error_ratio:rate30m\n        expr: sum(rate(http_requests_total{job=\"api\",code=~\"5..\"}[30m])) / sum(rate(http_requests_total{job=\"api\"}[30m]))\n      - record: slo:error_ratio:rate6h\n        expr: sum(rate(http_requests_total{job=\"api\",code=~\"5..\"}[6h])) / sum(rate(http_requests_total{job=\"api\"}[6h]))\n\n      - alert: ApiErrorBudgetFastBurn     # 2% бюджета за 1 час\n        expr: slo:error_ratio:rate1h > (14.4 * 0.001) and slo:error_ratio:rate5m > (14.4 * 0.001)\n        labels: { severity: page }\n      - alert: ApiErrorBudgetSlowBurn     # 5% бюджета за 6 часов\n        expr: slo:error_ratio:rate6h > (6 * 0.001) and slo:error_ratio:rate30m > (6 * 0.001)\n        labels: { severity: page }\n```\nКороткое окно (5m/30m) нужно, чтобы алерт быстро погас после исправления. Генераторы правил: Sloth, Pyrra."
+  },
+  {
+    "id": "Q-261036",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Bash и Python",
+    "question": "Анализ лога nginx",
+    "task": "Сгенерируй лог и ответь: топ-5 IP, распределение кодов, топ-5 URL с 5xx, запросы в минуту, доля 5xx.\n\n```bash\npython3 - > access.log <<'EOF'\nimport random\nfrom datetime import datetime, timedelta\nips = [f\"10.0.{random.randint(0,3)}.{random.randint(1,50)}\" for _ in range(40)]\npaths = [\"/\", \"/api/users\", \"/api/orders\", \"/login\", \"/static/app.js\", \"/health\"]\ncodes = [200]*80 + [301]*5 + [404]*7 + [500]*4 + [502]*2 + [503]*2\nt0 = datetime(2026, 10, 1, 12)\nfor i in range(5000):\n    ts = (t0 + timedelta(seconds=i//20)).strftime(\"%d/%b/%Y:%H:%M:%S +0300\")\n    print(f'{random.choice(ips)} - - [{ts}] \"GET {random.choice(paths)} HTTP/1.1\" {random.choice(codes)} {random.randint(200,5000)} \"-\" \"curl/8.5.0\"')\nEOF\n```",
+    "answer": "```bash\nawk '{print $1}' access.log | sort | uniq -c | sort -rn | head -5\nawk '{print $9}' access.log | sort | uniq -c | sort -rn\nawk '$9 ~ /^5/ {print $7}' access.log | sort | uniq -c | sort -rn | head -5\nawk '{print substr($4, 2, 17)}' access.log | uniq -c\nawk '{t++} $9 ~ /^5/ {e++} END {printf \"5xx: %.2f%%\\n\", e/t*100}' access.log\n```"
+  },
+  {
+    "id": "Q-261037",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Bash и Python",
+    "question": "Скрипт бэкапа PostgreSQL с ротацией и проверкой",
+    "task": "",
+    "answer": "```bash\n#!/usr/bin/env bash\nset -Eeuo pipefail\n\nDB=${DB:-app}\nDIR=${BACKUP_DIR:-/backup}\nKEEP=${KEEP:-7}\nTS=$(date +%F_%H%M)\nFILE=\"$DIR/${DB}_${TS}.sql.gz\"\n\nlog() { echo \"$(date -Is) $*\"; }\ntrap 'log \"ОШИБКА на строке $LINENO\"; rm -f \"$FILE\"; exit 1' ERR\n\nexec 9>/run/pg-backup.lock\nflock -n 9 || { log \"Бэкап уже идёт\"; exit 0; }\n\nmkdir -p \"$DIR\"\nlog \"Старт бэкапа $DB\"\npg_dump --no-owner \"$DB\" | gzip -9 > \"$FILE\"\n\ngzip -t \"$FILE\"                                      # архив не битый\n[[ $(stat -c %s \"$FILE\") -gt 1024 ]] || { log \"Слишком маленький файл\"; exit 1; }\n\naws s3 cp \"$FILE\" \"s3://acme-backups/postgres/\" --storage-class STANDARD_IA\n\nls -1t \"$DIR\"/${DB}_*.sql.gz | tail -n +$((KEEP+1)) | xargs -r rm --\nlog \"Готово: $FILE ($(du -h \"$FILE\" | cut -f1))\"\n```\nЧто сказать на интервью: `pg_dump` подходит для небольших БД; для больших — физические бэкапы и PITR (pgBackRest, WAL-G). Бэкап без регулярного тестового восстановления — не бэкап."
+  },
+  {
+    "id": "Q-261038",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Bash и Python",
+    "question": "Python: отчёт о проблемных подах",
+    "task": "Выведи все поды, которые не Running/Succeeded или рестартовали больше 3 раз, с причиной, в виде таблицы.",
+    "answer": "```python\n#!/usr/bin/env python3\n# pip install kubernetes\nfrom kubernetes import client, config\n\nconfig.load_kube_config()          # внутри кластера: config.load_incluster_config()\nv1 = client.CoreV1Api()\n\nrows = []\nfor p in v1.list_pod_for_all_namespaces().items:\n    for cs in p.status.container_statuses or []:\n        reason = \"\"\n        if cs.state.waiting:\n            reason = cs.state.waiting.reason\n        elif cs.last_state.terminated:\n            reason = f\"last: {cs.last_state.terminated.reason}\"\n        if p.status.phase not in (\"Running\", \"Succeeded\") or cs.restart_count > 3 or (cs.state.waiting and reason):\n            rows.append((p.metadata.namespace, p.metadata.name, p.status.phase, cs.restart_count, reason))\n\nprint(f\"{'NAMESPACE':<15}{'POD':<45}{'PHASE':<10}{'RESTARTS':<10}REASON\")\nfor r in sorted(rows, key=lambda r: -r[3]):\n    print(f\"{r[0]:<15}{r[1]:<45}{r[2]:<10}{r[3]:<10}{r[4]}\")\n```\nУлучшения: аргументы через `argparse`, вывод в JSON, отправка в Telegram/Slack, запуск как CronJob с ServiceAccount только на `list pods`."
+  },
+  {
+    "id": "Q-261039",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Инциденты",
+    "question": "«В пятницу в 18:00 после релиза выросли 5xx до 30%»",
+    "task": "",
+    "answer": "1. Объявить инцидент, назначить себя/кого-то Incident Commander, открыть канал, сообщить статус.\n2. Связать с изменением: релиз 10 минут назад → самая вероятная причина.\n3. Mitigate first: немедленный откат (`kubectl rollout undo` / `git revert` в GitOps / выключить feature flag). Не дебажить в проде полчаса при 30% ошибок.\n4. Проверить восстановление: 5xx вернулись к базовому уровню, latency в норме.\n5. Root cause после: логи и трейсы упавших запросов, diff релиза, миграции БД, новые зависимости/конфиги.\n6. Postmortem: почему canary/тесты не поймали? Action items: canary с автоматическим анализом (Argo Rollouts + Prometheus), контрактные тесты, запрет релизов в пятницу вечером без дежурного."
+  },
+  {
+    "id": "Q-261040",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Инциденты",
+    "question": "«Ночью база данных стала отвечать в 10 раз медленнее, релизов не было»",
+    "task": "",
+    "answer": "1. Масштаб: все запросы или часть? Все сервисы или один? С какого времени (наложить на графики)?\n2. Что изменилось без релиза: cron/батч-задачи, бэкап, `VACUUM`/`ANALYZE`, рост данных, всплеск трафика (бот, маркетинговая рассылка), облачное обслуживание, исчерпание burst-кредитов диска (gp2/t-инстансы).\n3. Ресурсы БД: CPU, IOPS/latency диска, память (cache hit ratio), число соединений, репликационный лаг, блокировки.\n4. Запросы: `pg_stat_activity` (долгие и ждущие), `pg_stat_statements` (топ по total time), `pg_locks`; план запроса изменился (`EXPLAIN ANALYZE`) — статистика устарела.\n5. Mitigate: убить зависший тяжёлый запрос/транзакцию, остановить батч, увеличить пул/инстанс, переключить чтение на реплику.\n6. Предотвращение: алерты на slow queries и соединения, `statement_timeout`, батчи в окно с низкой нагрузкой, connection pooler (PgBouncer), capacity planning."
+  },
+  {
+    "id": "Q-261041",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Git",
+    "question": "Верни коммиты после reset --hard",
+    "task": "```bash\ngit init -b main lab && cd lab\nfor i in 1 2 3; do echo $i > f; git add f; git commit -qm \"commit $i\"; done\ngit reset --hard HEAD~2      # «потеряли» два коммита\ngit log --oneline            # остался только commit 1\n```",
+    "answer": "```bash\ngit reflog                   # HEAD@{1}: commit: commit 3\ngit reset --hard HEAD@{1}    # или git branch rescue <sha>\ngit log --oneline            # все три на месте\n```\nДля интервью: reflog локален и хранится ~90 дней (`gc.reflogExpire`). Удалённую ветку восстанавливают так же: `git branch name <sha>`. Если коммит был только у коллеги и он сделал `push --force` — ищи в его reflog или в CI-кэше."
+  },
+  {
+    "id": "Q-261042",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Git",
+    "question": "Найди коммит, сломавший тест, автоматически",
+    "task": "```bash\ngit init -b main bis && cd bis\necho 'echo 4' > calc.sh && git add . && git commit -qm v0\nfor i in $(seq 1 30); do echo \"# $i\" >> calc.sh; git commit -qam \"c$i\"; done\nsed -i 's/echo 4/echo 5/' calc.sh && git commit -qam \"refactor\"\nfor i in $(seq 31 50); do echo \"# $i\" >> calc.sh; git commit -qam \"c$i\"; done\n# Тест: bash calc.sh должен печатать 4\n```",
+    "answer": "```bash\ngit bisect start HEAD $(git rev-list --max-parents=0 HEAD)   # bad, good\ngit bisect run sh -c '[ \"$(bash calc.sh)\" = 4 ]'              # exit 0 = good\n# ... <sha> is the first bad commit  →  refactor\ngit bisect reset\n```\n52 коммита → ~6 шагов (log₂). Код возврата 125 в скрипте = «пропустить коммит» (не собирается)."
+  },
+  {
+    "id": "Q-261043",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Git",
+    "question": "Удали секрет из истории",
+    "task": "В репозиторий три коммита назад попал файл `.env` с паролем БД, ветка уже запушена.",
+    "answer": "1. Сначала ротировать секрет — он уже скомпрометирован (форки, клоны, CI-кэши).\n2. Переписать историю:\n   ```bash\n   pip install git-filter-repo\n   git filter-repo --path .env --invert-paths      # или --replace-text secrets.txt\n   echo \".env\" >> .gitignore && git commit -am \"ignore .env\"\n   git push --force --all && git push --force --tags\n   ```\n3. Попросить коллег переклонировать; на GitHub — обратиться в поддержку для очистки кэшированных view/PR.\n4. Профилактика: gitleaks в pre-commit и CI, push protection.\n\nЛовушка: ответ «удалю файл новым коммитом» — неверный, секрет остаётся в истории."
+  },
+  {
+    "id": "Q-261044",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Облака",
+    "question": "Безопасный S3-бакет на Terraform",
+    "task": "Бакет для бэкапов: без публичного доступа, шифрование, версионирование, переход в холодный класс через 30 дней, удаление через 365.",
+    "answer": "```hcl\nresource \"aws_s3_bucket\" \"backup\" {\n  bucket = \"acme-prod-backups\"\n  lifecycle { prevent_destroy = true }\n}\n\nresource \"aws_s3_bucket_public_access_block\" \"backup\" {\n  bucket                  = aws_s3_bucket.backup.id\n  block_public_acls       = true\n  block_public_policy     = true\n  ignore_public_acls      = true\n  restrict_public_buckets = true\n}\n\nresource \"aws_s3_bucket_versioning\" \"backup\" {\n  bucket = aws_s3_bucket.backup.id\n  versioning_configuration { status = \"Enabled\" }\n}\n\nresource \"aws_s3_bucket_server_side_encryption_configuration\" \"backup\" {\n  bucket = aws_s3_bucket.backup.id\n  rule {\n    apply_server_side_encryption_by_default {\n      sse_algorithm     = \"aws:kms\"\n      kms_master_key_id = aws_kms_key.backup.arn\n    }\n    bucket_key_enabled = true    # дешевле: меньше вызовов KMS\n  }\n}\n\nresource \"aws_s3_bucket_lifecycle_configuration\" \"backup\" {\n  bucket = aws_s3_bucket.backup.id\n  rule {\n    id     = \"tiering\"\n    status = \"Enabled\"\n    filter {}\n    transition {\n      days          = 30\n      storage_class = \"GLACIER_IR\"\n    }\n    expiration { days = 365 }\n    noncurrent_version_expiration { noncurrent_days = 30 }\n  }\n}\n```\nПлюс для защиты от ransomware: Object Lock (compliance mode) и отдельный аккаунт для бэкапов. Проверка: `checkov -d .` / `trivy config .`."
+  },
+  {
+    "id": "Q-261045",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Облака",
+    "question": "CI без долгоживущих ключей: OIDC GitHub → AWS",
+    "task": "",
+    "answer": "Trust policy роли — разрешаем только main-ветку конкретного репозитория:\n```json\n{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [{\n    \"Effect\": \"Allow\",\n    \"Principal\": { \"Federated\": \"arn:aws:iam::123456789012:oidc-provider/token.actions.githubusercontent.com\" },\n    \"Action\": \"sts:AssumeRoleWithWebIdentity\",\n    \"Condition\": {\n      \"StringEquals\": {\n        \"token.actions.githubusercontent.com:aud\": \"sts.amazonaws.com\",\n        \"token.actions.githubusercontent.com:sub\": \"repo:acme/api:ref:refs/heads/main\"\n      }\n    }\n  }]\n}\n```\nWorkflow:\n```yaml\npermissions: { id-token: write, contents: read }\nsteps:\n  - uses: aws-actions/configure-aws-credentials@v4\n    with:\n      role-to-assume: arn:aws:iam::123456789012:role/gha-deploy\n      aws-region: eu-central-1\n  - run: aws sts get-caller-identity\n```\nЛовушка: условие `sub` через `StringLike: repo:acme/*` открывает роль любому репозиторию организации и любой ветке, включая PR из форков."
+  },
+  {
+    "id": "Q-261046",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Облака",
+    "question": "FinOps-кейс: «счёт вырос с $18k до $31k»",
+    "task": "В Cost Explorer: EC2 +$2k, EC2-Other +$9k, S3 +$1k, CloudWatch +$1k. Где искать?",
+    "answer": "1. EC2-Other — это NAT Gateway, межзональный трафик, EBS, снапшоты, Elastic IP. Детализируй по *Usage type*: `NatGateway-Bytes`, `DataTransfer-Regional-Bytes`.\n2. Типичная причина: новый сервис качает образы/данные из S3 или ECR через NAT → Gateway VPC Endpoint для S3 (бесплатный) и Interface Endpoints для ECR.\n3. Межзональный трафик: поды ходят в БД/кэш в другой AZ → topology-aware routing (`trafficDistribution: PreferClose`), реплики в каждой AZ.\n4. CloudWatch +$1k — обычно логи: кто-то включил debug → ретеншн и уровень логирования.\n5. Закрепить: теги `team`/`service` обязательны (SCP/Kyverno), бюджеты и anomaly detection с алертами, Kubecost для K8s.\n\nОценка экономии вслух: «NAT стоит ~$0.045/ГБ; 100 ТБ/мес через NAT = ~$4.5k, endpoint для S3 убирает это полностью»."
+  },
+  {
+    "id": "Q-261047",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Security",
+    "question": "Security-гейт в CI",
+    "task": "Пайплайн должен падать на секретах в коде, на CRITICAL/HIGH CVE с доступным фиксом и на ошибках в Terraform.",
+    "answer": "```yaml\nname: security\non: [pull_request]\njobs:\n  scan:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n        with: { fetch-depth: 0 }\n      - name: Secrets\n        uses: gitleaks/gitleaks-action@v2\n        env: { GITHUB_TOKEN: \"${{ secrets.GITHUB_TOKEN }}\" }\n      - name: IaC\n        uses: aquasecurity/trivy-action@0.28.0\n        with: { scan-type: config, scan-ref: ./infra, exit-code: \"1\", severity: \"HIGH,CRITICAL\" }\n      - name: Build\n        run: docker build -t app:${{ github.sha }} .\n      - name: Image CVE\n        uses: aquasecurity/trivy-action@0.28.0\n        with:\n          image-ref: app:${{ github.sha }}\n          exit-code: \"1\"\n          severity: CRITICAL,HIGH\n          ignore-unfixed: true          # не блокировать то, что нечем чинить\n          format: sarif\n          output: trivy.sarif\n      - uses: github/codeql-action/upload-sarif@v3\n        if: always()\n        with: { sarif_file: trivy.sarif }\n```\nИсключения — в `.trivyignore` с комментарием и сроком пересмотра. Версии actions в проде пинить по SHA."
+  },
+  {
+    "id": "Q-261048",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Security",
+    "question": "Секреты из Vault в K8s через External Secrets Operator",
+    "task": "",
+    "answer": "```yaml\napiVersion: external-secrets.io/v1beta1\nkind: SecretStore\nmetadata: { name: vault, namespace: prod }\nspec:\n  provider:\n    vault:\n      server: https://vault.internal:8200\n      path: kv\n      version: v2\n      auth:\n        kubernetes:                       # под аутентифицируется своим ServiceAccount\n          mountPath: kubernetes\n          role: prod-api\n          serviceAccountRef: { name: api }\n---\napiVersion: external-secrets.io/v1beta1\nkind: ExternalSecret\nmetadata: { name: api-db, namespace: prod }\nspec:\n  refreshInterval: 1h\n  secretStoreRef: { name: vault, kind: SecretStore }\n  target: { name: api-db }                # обычный K8s Secret, создаётся оператором\n  data:\n    - secretKey: DATABASE_PASSWORD\n      remoteRef: { key: prod/api/db, property: password }\n```\nВ Git лежат только эти манифесты — без значений. Для ротации без рестарта пода: монтировать Secret как файл (обновится сам) или Reloader."
+  },
+  {
+    "id": "Q-261049",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · Security",
+    "question": "Подпиши образ и запрети неподписанные",
+    "task": "",
+    "answer": "```bash\ncosign generate-key-pair                           # или keyless через OIDC в CI\ncosign sign --key cosign.key ghcr.io/acme/api@sha256:<digest>\ncosign verify --key cosign.pub ghcr.io/acme/api@sha256:<digest>\nsyft ghcr.io/acme/api@sha256:<digest> -o cyclonedx-json > sbom.json\ncosign attest --key cosign.key --type cyclonedx --predicate sbom.json ghcr.io/acme/api@sha256:<digest>\n```\n```yaml\napiVersion: kyverno.io/v1\nkind: ClusterPolicy\nmetadata: { name: verify-signature }\nspec:\n  validationFailureAction: Enforce\n  webhookTimeoutSeconds: 30\n  rules:\n    - name: check-cosign\n      match: { any: [{ resources: { kinds: [Pod] } }] }\n      verifyImages:\n        - imageReferences: [\"ghcr.io/acme/*\"]\n          mutateDigest: true                     # тег → digest\n          attestors:\n            - entries:\n                - keys:\n                    publicKeys: |-\n                      -----BEGIN PUBLIC KEY-----\n                      ...\n                      -----END PUBLIC KEY-----\n```\nПодписывать digest, а не тег — тег можно перезаписать."
+  },
+  {
+    "id": "Q-261050",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · SRE",
+    "question": "Определи SLI/SLO и error budget policy",
+    "task": "Сервис: публичный API платежей. Сформулируй 2 SLI, SLO и что происходит при исчерпании бюджета.",
+    "answer": "| SLI | Как считаем | SLO (28 дней) |\n|-----|-------------|---------------|\n| Доступность | доля ответов не-5xx на LB (исключая 429) | 99.95% |\n| Latency | доля запросов `POST /payments` быстрее 400 мс | 99% |\n\n```promql\n# SLI доступности\n1 - (sum(rate(http_requests_total{route=\"/payments\",status=~\"5..\"}[28d]))\n     / sum(rate(http_requests_total{route=\"/payments\"}[28d])))\n```\nError budget policy (согласована с продуктом заранее):\n- бюджет < 50% → обязательный canary для всех релизов;\n- бюджет < 25% → только багфиксы и задачи надёжности;\n- бюджет исчерпан → фриз фич, топ action items постмортемов в приоритете, ревью с CTO;\n- один инцидент сжёг > 20% бюджета → обязательный постмортем.\n\nИзмеряем на стороне клиента/LB, а не внутри приложения: падающий под не посчитает свои ошибки."
+  },
+  {
+    "id": "Q-261051",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · SRE",
+    "question": "Напиши runbook к алерту",
+    "task": "Алерт `PostgresReplicationLagHigh` (лаг > 60 с за 5 минут).",
+    "answer": "```markdown\n# Runbook: PostgresReplicationLagHigh\nВлияние: чтения с реплики отдают устаревшие данные; при failover возможна потеря данных (RPO).\nСрочность: P2 днём; P1, если лаг > 10 мин или растёт линейно.\n\n## Диагностика\n1. Дашборд «Postgres / Replication». Лаг растёт или стабилен?\n2. На primary: `SELECT client_addr, state, write_lag, replay_lag FROM pg_stat_replication;`\n3. На реплике: `SELECT now() - pg_last_xact_replay_timestamp();`\n4. Типичные причины:\n   - тяжёлая запись на primary (миграция, батч) → проверить `pg_stat_activity`;\n   - диск/CPU реплики упёрлись → `iostat`, метрики ноды;\n   - долгий запрос на реплике блокирует replay (`max_standby_streaming_delay`);\n   - сеть между AZ.\n\n## Действия\n- Батч/миграция → согласовать паузу с владельцем.\n- Долгий запрос на реплике → `SELECT pg_cancel_backend(pid)`.\n- Лаг > 10 мин → переключить чтение на primary (флаг `READ_FROM_REPLICA=false`).\n- Не помогло за 30 мин → эскалация: @db-oncall.\n\n## После\nЗадача на постмортем, если влияние на пользователей было.\n```\nХороший runbook отвечает на «что делать в 3 часа ночи», а не пересказывает документацию."
+  },
+  {
+    "id": "Q-261052",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · SRE",
+    "question": "Проведи game day",
+    "task": "Спланируй учения: что ломаем, гипотеза, критерии остановки.",
+    "answer": "| Эксперимент | Гипотеза | Как | Стоп-условие |\n|-------------|----------|-----|--------------|\n| Убить 1 из 3 подов API | 0 ошибок для клиентов | `kubectl delete pod` / Chaos Mesh `PodChaos` | 5xx > 1% |\n| Задержка 300 мс к Redis | p99 < 1 с, срабатывают таймауты | Chaos Mesh `NetworkChaos` delay | p99 > 3 с |\n| Отказ AZ | трафик уходит в 2 другие за < 2 мин | cordon + drain всех нод AZ, отключение подсети | SLO burn rate > 14 |\n| Failover БД | RTO < 60 с, без потери записей | `patronictl switchover` | ошибки > 2 мин |\n\nПорядок: staging → прод в низкую нагрузку → с дежурным и предупреждением поддержки. Результат — список находок с владельцами, как в постмортеме."
+  },
+  {
+    "id": "Q-261053",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · System Design",
+    "question": "Платформа для 30 команд разработчиков",
+    "task": "Компания переходит с ВМ на K8s. 150 сервисов, 30 команд, нужна self-service платформа.",
+    "answer": "1. Уточнить: облако или on-prem, требования compliance, текущий CI, сколько окружений, мульти-тенантность.\n2. Кластеры: prod / non-prod раздельно, namespace на команду+окружение, ResourceQuota/LimitRange, NetworkPolicy default deny.\n3. Golden path: шаблон сервиса (Backstage scaffolder) → репо с CI, Helm-чартом, дашбордами и алертами «из коробки».\n4. Доставка: GitHub Actions/GitLab CI собирают образ → Argo CD (ApplicationSet на команду) → canary через Argo Rollouts.\n5. Политики: Kyverno (без root, лимиты, подписанные образы), RBAC по группам из SSO.\n6. Секреты: Vault + ESO. Observability: OTel Collector → Prometheus/Mimir, Loki, Tempo; SLO-шаблоны.\n7. Стоимость: Kubecost, showback по namespace, Karpenter + spot для non-prod.\n8. Миграция: пилот на 2–3 командах, метрики DORA до/после.\n\nКритерии: ✅ спросил требования ✅ разделил платформу и приложения ✅ назвал self-service, а не «тикеты в DevOps» ✅ безопасность и стоимость ✅ план миграции."
+  },
+  {
+    "id": "Q-261054",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · System Design",
+    "question": "Деплой без даунтайма с переименованием колонки",
+    "task": "Нужно переименовать `users.name` → `users.full_name` в таблице на 200 млн строк, сервис работает 24/7.",
+    "answer": "Паттерн expand → migrate → contract, каждый шаг — отдельный релиз:\n1. `ALTER TABLE users ADD COLUMN full_name text;` (без DEFAULT — мгновенно).\n2. Релиз A: код пишет в обе колонки, читает из старой.\n3. Бэкфилл батчами по 10k строк с паузами (не одним `UPDATE` — блокировки, раздувание WAL, лаг реплик).\n4. Релиз B: читает из новой, пишет в обе.\n5. Релиз C: пишет только в новую. Наблюдаем неделю.\n6. `ALTER TABLE users DROP COLUMN name;`\n\nКаждый шаг откатывается независимо. Миграции — отдельной джобой (Helm hook / Argo sync wave), с `lock_timeout`, чтобы не повесить прод в очереди на блокировку.\n\nКритерии: ✅ две версии кода работают одновременно (rolling) ✅ батчи ✅ откат на каждом шаге ✅ блокировки и реплики."
+  },
+  {
+    "id": "Q-261055",
+    "level": "Практика",
+    "type": "Практика",
+    "topic": "2026 · System Design",
+    "question": "Мониторинг 50 кластеров в 3 регионах",
+    "task": "",
+    "answer": "1. В каждом кластере: Prometheus Agent / OTel Collector (сбор, без долгого хранения) + Fluent Bit/Alloy для логов.\n2. Центр: remote_write в Mimir/VictoriaMetrics cluster (multi-tenant, tenant = кластер), Loki, Tempo; объектное хранилище для долгого хранения.\n3. Надёжность: WAL у агентов на случай недоступности центра; алерты «нет данных от кластера» (`absent`/deadman switch во внешней системе).\n4. Кардинальность: лимиты на тенанта, relabeling, recording rules на краю.\n5. Алертинг: локальные критичные правила оцениваются в кластере (работают при разрыве связи), глобальные — в центре; Alertmanager в HA, маршрутизация по `team`.\n6. Оценка: 50 кластеров × 500k серий = 25M активных серий → ~ порядок размера кластера Mimir; стоимость хранения.\n\nКритерии: ✅ разделение сбора и хранения ✅ поведение при разрыве сети ✅ multi-tenancy и лимиты ✅ мониторинг самого мониторинга."
+  }
+]

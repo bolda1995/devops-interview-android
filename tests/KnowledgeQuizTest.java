@@ -14,7 +14,7 @@ public class KnowledgeQuizTest {
             actual.add(item.topic);
             if(!questions.add(item.question)||item.options.size()!=4||!item.options.contains(item.correct))throw new AssertionError(item.question);
         }
-        if(!expected.equals(actual)||items.size()<73)throw new AssertionError("Coverage mismatch "+expected+" vs "+actual);
+        if(!actual.containsAll(expected)||items.size()<86)throw new AssertionError("Coverage mismatch "+expected+" vs "+actual);
         System.out.println("Verified "+items.size()+" knowledge questions across "+actual.size()+" topics");
     }
 }

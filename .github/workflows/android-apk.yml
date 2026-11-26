@@ -31,6 +31,8 @@ jobs:
           mkdir -p /tmp/knowledge-test
           javac -encoding UTF-8 -d /tmp/knowledge-test app/src/main/java/ru/devops/interview/KnowledgeQuiz.java tests/KnowledgeQuizTest.java
           java -cp /tmp/knowledge-test ru.devops.interview.KnowledgeQuizTest app/src/main/assets/knowledge_quiz.txt app/src/main/assets/questions.md
+      - name: Validate course import
+        run: python3 tests/validate_course.py
       - run: gradle --no-daemon :app:assembleDebug
       - uses: actions/upload-artifact@v4
         with:
