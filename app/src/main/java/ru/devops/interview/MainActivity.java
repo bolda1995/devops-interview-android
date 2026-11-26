@@ -62,7 +62,8 @@ public class MainActivity extends Activity {
     void home(){page="home";init("DevOps Interview","Тренируйся отвечать уверенно");
         LinearLayout hero=column();hero.setPadding(d(20),d(20),d(20),d(20));hero.setBackground(shape(PANEL,20));hero.addView(text("ТВОЯ ПОДГОТОВКА",12,ACCENT,true));space(hero,12);hero.addView(text(all.size()+" вопросов",26,TEXT,true));space(hero,6);hero.addView(text(categories.size()+" тем  ·  "+known()+" изучено  ·  "+starred()+" в избранном",14,MUTED,false));body.addView(hero);space(body,20);
         addButton(body,"Начать тренировку  →",true,()->{category="Все темы";level="Все уровни";query="";favorites=false;startDeck(true);});
-        addButton(body,"Тесты · цепочки обучения",true,()->showChainTopics());
+        addButton(body,"Тесты",true,()->openLearningTopics(true));
+        addButton(body,"Цепочки обучения",true,()->openLearningTopics(false));
         addButton(body,"Категории и поиск",false,()->{category="Все темы";level="Все уровни";query="";favorites=false;browse();});
         addButton(body,"Избранное  ·  "+starred(),false,()->{category="Все темы";level="Все уровни";query="";favorites=true;browse();});
         addButton(body,"Повторить слабые вопросы  ·  "+weakQuestions().size(),true,()->repeatWeak());
@@ -84,7 +85,7 @@ public class MainActivity extends Activity {
     }
     void setSpinner(Spinner spinner,ArrayList<String> values,int selected){ArrayAdapter<String> adapter=new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item,values){@Override public View getView(int p,View c,android.view.ViewGroup parent){TextView t=(TextView)super.getView(p,c,parent);t.setTextColor(TEXT);t.setPadding(d(14),d(12),d(14),d(12));return t;}};adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);spinner.setAdapter(adapter);spinner.setBackground(shape(PANEL,12));spinner.setSelection(selected);}
     void startDeck(boolean shuffle){questionOrigin=page;deck.clear();deck.addAll(filtered());if(deck.isEmpty()){Toast.makeText(this,"Нет вопросов для тренировки",Toast.LENGTH_SHORT).show();return;}if(shuffle)Collections.shuffle(deck);index=0;showQuestion();}
-    void leaveQuestion(){if(questionOrigin.equals("browse"))browse();else if(questionOrigin.equals("history"))showHistory();else if(questionOrigin.equals("chainList"))showChainList();else home();}
+    void leaveQuestion(){if(questionOrigin.equals("browse"))browse();else if(questionOrigin.equals("history"))showHistory();else if(questionOrigin.equals("chainList")||questionOrigin.equals("testList")){testMode=questionOrigin.equals("testList");showChainList();}else home();}
 
 
     private static final int SPEECH_REQUEST=742;
@@ -165,7 +166,8 @@ public class MainActivity extends Activity {
     void showQuestion(){page="question";Question q=deck.get(index);init("Тренировка",(index+1)+" / "+deck.size()+"  ·  "+q.category);
         addButton(body,questionOrigin.equals("browse")?"← К вопросам":questionOrigin.equals("history")?"← К истории":"← На главную",false,()->leaveQuestion());
         LinearLayout card=column();card.setPadding(d(20),d(22),d(20),d(22));card.setBackground(shape(PANEL,20));card.addView(text(q.id+"  ·  "+q.level+"  ·  "+q.type,12,ACCENT,true));space(card,18);card.addView(text(q.text,21,TEXT,true));space(card,18);card.addView(text("Напиши ответ или ответь вслух. Если не знаешь, открой эталонный ответ.",14,MUTED,false));body.addView(card);space(body,16);
-        addButton(body,"Выучить ответ по цепочке",true,()->startChain(q,true));
+        addButton(body,"Пройти тест",true,()->{testMode=true;startChain(q,true);});
+        addButton(body,"Выучить ответ по цепочке",false,()->{testMode=false;startChain(q,true);});
         body.addView(text("ТВОЙ ОТВЕТ",12,ACCENT,true));space(body,8);
         EditText draft=new EditText(this);draft.setTextColor(TEXT);draft.setHintTextColor(MUTED);draft.setTextSize(16);draft.setGravity(Gravity.TOP|Gravity.START);draft.setPadding(d(16),d(14),d(16),d(14));draft.setBackground(shape(PANEL,14));draft.setHint("Напиши свой ответ здесь");draft.setInputType(android.text.InputType.TYPE_CLASS_TEXT|android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE|android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);draft.setMinLines(4);draft.setText(prefs.getString("draft_"+q.id,""));body.addView(draft,new LinearLayout.LayoutParams(-1,-2));space(body,16);
         draft.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int st,int c,int a){}public void onTextChanged(CharSequence s,int st,int before,int count){prefs.edit().putString("draft_"+q.id,s.toString()).apply();}public void afterTextChanged(Editable e){}});
@@ -193,16 +195,19 @@ public class MainActivity extends Activity {
     Question chainQuestion;
     List<LearningChain.Step> chainSteps=Collections.emptyList();
     int chainIndex,chainCorrect;
-    boolean chainFromQuestion;
+    boolean chainFromQuestion, testMode;
+    static final int CORRECT=Color.rgb(26,112,76), WRONG=Color.rgb(151,49,55);
+    String learningKey(){return testMode?"test_":"chain_";}
+    void openLearningTopics(boolean tests){testMode=tests;showChainTopics();}
     String chainCategory="Все темы";
     void showChainTopics(){
-        page="chainTopics";init("Тесты · цепочки","Запоминай ответ небольшими фрагментами");
+        page="chainTopics";init(testMode?"Тесты":"Цепочки обучения",testMode?"Проверь знания без предварительного изучения":"Запоминай ответ небольшими фрагментами");
         addButton(body,"← На главную",false,()->home());
         addButton(body,"Все темы",true,()->{chainCategory="Все темы";showChainList();});
         for(String topic:categories.keySet())addButton(body,topic,false,()->{chainCategory=topic;showChainList();});
     }
     void showChainList(){
-        page="chainList";init("Выбери вопрос",chainCategory);
+        page="chainList";init(testMode?"Тесты — выбери вопрос":"Цепочки — выбери вопрос",chainCategory);
         addButton(body,"← К темам",false,()->showChainTopics());
         EditText search=new EditText(this);search.setSingleLine(true);search.setTextColor(TEXT);search.setHintTextColor(MUTED);search.setHint("Поиск вопроса");body.addView(search);space(body,12);
         LinearLayout list=column();body.addView(list);
@@ -212,8 +217,9 @@ public class MainActivity extends Activity {
                 if(!chainCategory.equals("Все темы")&&!q.category.equals(chainCategory))continue;
                 if(!(q.id+" "+q.text).toLowerCase(Locale.ROOT).contains(term))continue;
                 if(!answers.containsKey(q.id))continue;
-                String best=prefs.getString("chain_best_"+q.id,"");
-                if(count++<100)addButton(list,(best.isEmpty()?"":"Тест "+best+" · ")+q.text,false,()->startChain(q,false));
+                String best=prefs.getString(learningKey()+"best_"+q.id,"");
+                String last=prefs.getString(learningKey()+"last_"+q.id,"");
+                if(count++<100)addButton(list,(last.isEmpty()?"":"Последний: "+last+" · ")+(best.isEmpty()?"":"Лучший: "+best+" · ")+q.text,false,()->startChain(q,false));
             }
             if(count==0)list.addView(text("Нет вопросов с готовым ответом.",15,MUTED,false));
             if(count>100)list.addView(text("Показаны первые 100. Используй поиск.",13,MUTED,false));
@@ -224,12 +230,12 @@ public class MainActivity extends Activity {
         List<LearningChain.Step> steps=LearningChain.build(answers.get(q.id),new Random());
         if(steps.isEmpty()){Toast.makeText(this,"Нет готового материала для цепочки",Toast.LENGTH_LONG).show();return;}
         chainQuestion=q;chainSteps=steps;chainIndex=0;chainCorrect=0;chainFromQuestion=fromQuestion;
-        showChainStudy();
+        if(testMode)showChainQuiz();else showChainStudy();
     }
     void leaveChain(){if(chainFromQuestion)showQuestion();else showChainList();}
     void chainHeader(String title){
-        page="chain";init(title,"Шаг "+(chainIndex+1)+" из "+chainSteps.size()+" · "+chainQuestion.category);
-        addButton(body,"← Выйти из цепочки",false,()->leaveChain());
+        page="chain";init(title,(testMode?"Тест ":"Шаг ")+(chainIndex+1)+" из "+chainSteps.size()+" · "+chainQuestion.category+" · Верно: "+chainCorrect);
+        addButton(body,testMode?"← Выйти из теста":"← Выйти из цепочки",false,()->leaveChain());
         body.addView(text(chainQuestion.text,18,TEXT,true));space(body,15);
     }
     void showChainStudy(){
@@ -237,41 +243,69 @@ public class MainActivity extends Activity {
         body.addView(text(chainSteps.get(chainIndex).explanation,18,TEXT,false));space(body,20);
         addButton(body,"Запомнил — пройти тест",true,()->showChainQuiz());
     }
+    interface QuizSubmit { void accept(String selected); }
     void showChainQuiz(){
-        chainHeader("Мини-тест");
+        chainHeader(testMode?"Тест":"Мини-тест");
         LearningChain.Step step=chainSteps.get(chainIndex);
-        body.addView(text("Восстанови пропущенное слово в изученном фрагменте.",14,MUTED,false));space(body,10);
+        body.addView(text(testMode?"Выбери пропущенное слово в ответе.":"Восстанови пропущенное слово в изученном фрагменте.",14,MUTED,false));space(body,10);
         body.addView(text(step.prompt,18,TEXT,true));space(body,16);
+        LinearLayout choices=column();body.addView(choices);
+        ArrayList<TextView> optionViews=new ArrayList<>();
+        LinearLayout feedback=column();
+        final boolean[] answered={false};
+        QuizSubmit submit=selected->{
+            if(answered[0])return;
+            answered[0]=true;
+            boolean correct=selected!=null&&selected.equalsIgnoreCase(step.correct);
+            if(correct)chainCorrect++;
+            for(int i=0;i<optionViews.size();i++){
+                TextView view=optionViews.get(i);String option=step.options.get(i);
+                view.setEnabled(false);
+                if(option.equalsIgnoreCase(step.correct)){
+                    view.setText("✓ "+option+" — правильно");view.setBackground(shape(CORRECT,14));
+                }else if(selected!=null&&option.equalsIgnoreCase(selected)){
+                    view.setText("✗ "+option+" — неправильно");view.setBackground(shape(WRONG,14));
+                }
+            }
+            for(int i=0;i<choices.getChildCount();i++)choices.getChildAt(i).setEnabled(false);
+            TextView verdict=text(correct?"✓ Правильно":selected==null?"✗ Не знаю":"✗ Неправильно",19,TEXT,true);
+            verdict.setPadding(d(14),d(12),d(14),d(12));verdict.setBackground(shape(correct?CORRECT:WRONG,12));
+            feedback.addView(verdict);space(feedback,10);
+            if(selected!=null&&!correct)feedback.addView(text("Твой ответ: "+selected,15,TEXT,false));
+            feedback.addView(text("Правильный ответ: "+step.correct,17,ACCENT,true));space(feedback,10);
+            feedback.addView(text(step.explanation,16,TEXT,false));space(feedback,15);
+            addButton(feedback,chainIndex+1==chainSteps.size()?"Посмотреть результат":testMode?"Следующий тест →":"Следующий фрагмент →",true,()->{
+                chainIndex++;if(chainIndex==chainSteps.size())showChainResult();else if(testMode)showChainQuiz();else showChainStudy();
+            });
+            feedback.post(()->feedback.requestRectangleOnScreen(new android.graphics.Rect(0,0,feedback.getWidth(),Math.min(feedback.getHeight(),d(200))),false));
+        };
         if(step.options.size()>=2){
-            for(String option:step.options)addButton(body,option,false,()->showChainFeedback(option.equalsIgnoreCase(step.correct)));
+            for(String option:step.options){
+                TextView view=button(option,false,()->submit.accept(option));optionViews.add(view);
+                choices.addView(view,new LinearLayout.LayoutParams(-1,-2));space(choices,10);
+            }
         }else{
-            EditText input=new EditText(this);input.setSingleLine(true);input.setTextColor(TEXT);input.setHintTextColor(MUTED);input.setHint("Пропущенное слово");body.addView(input);space(body,10);
-            addButton(body,"Проверить",true,()->showChainFeedback(input.getText().toString().trim().equalsIgnoreCase(step.correct)));
+            EditText input=new EditText(this);input.setSingleLine(true);input.setTextColor(TEXT);input.setHintTextColor(MUTED);input.setHint("Пропущенное слово");choices.addView(input);space(choices,10);
+            addButton(choices,"Проверить",true,()->submit.accept(input.getText().toString().trim()));
         }
-        addButton(body,"Не помню",false,()->showChainFeedback(false));
-    }
-    void showChainFeedback(boolean correct){
-        if(correct)chainCorrect++;
-        chainHeader(correct?"Верно!":"Запомни правильный ответ");
-        LearningChain.Step step=chainSteps.get(chainIndex);
-        body.addView(text("Правильное слово: "+step.correct,18,ACCENT,true));space(body,12);
-        body.addView(text(step.explanation,17,TEXT,false));space(body,20);
-        addButton(body,chainIndex+1==chainSteps.size()?"Результат цепочки":"Следующий фрагмент →",true,()->{
-            chainIndex++;if(chainIndex==chainSteps.size())showChainResult();else showChainStudy();
-        });
+        addButton(choices,"Не знаю",false,()->submit.accept(null));
+        body.addView(feedback);space(body,20);
     }
     void showChainResult(){
         page="chain";int total=chainSteps.size();int percent=100*chainCorrect/total;
-        String id=chainQuestion.id;int previous=prefs.getInt("chain_percent_"+id,-1);
-        if(percent>=previous)prefs.edit().putInt("chain_percent_"+id,percent).putString("chain_best_"+id,chainCorrect+"/"+total).apply();
-        init("Цепочка завершена",chainQuestion.text);
+        String id=chainQuestion.id;int previous=prefs.getInt(learningKey()+"percent_"+id,-1);
+        SharedPreferences.Editor progress=prefs.edit().putString(learningKey()+"last_"+id,chainCorrect+"/"+total);
+        if(percent>=previous)progress.putInt(learningKey()+"percent_"+id,percent).putString(learningKey()+"best_"+id,chainCorrect+"/"+total);
+        progress.apply();
+        init(testMode?"Тест завершён":"Цепочка завершена",chainQuestion.text);
         body.addView(text(chainCorrect+" / "+total+" правильных · "+percent+"%",25,ACCENT,true));space(body,12);
+        body.addView(text("✓ Правильно: "+chainCorrect+"   ·   ✗ Неправильно: "+(total-chainCorrect),16,TEXT,true));space(body,12);
         body.addView(text("Теперь попробуй воспроизвести весь ответ своими словами. Мини-тесты проверяют запоминание текста, а не глубину знаний.",16,TEXT,false));space(body,20);
         addButton(body,"Ответить на полный вопрос",true,()->{
-            if(!chainFromQuestion){questionOrigin="chainList";deck.clear();deck.add(chainQuestion);index=0;}
+            if(!chainFromQuestion){questionOrigin=testMode?"testList":"chainList";deck.clear();deck.add(chainQuestion);index=0;}
             showQuestion();
         });
-        addButton(body,"Повторить цепочку",false,()->startChain(chainQuestion,chainFromQuestion));
+        addButton(body,testMode?"Повторить тест":"Повторить цепочку",false,()->startChain(chainQuestion,chainFromQuestion));
         addButton(body,"← К вопросам",false,()->leaveChain());
     }
 
