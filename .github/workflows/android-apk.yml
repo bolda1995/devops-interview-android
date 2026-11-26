@@ -26,6 +26,11 @@ jobs:
           mkdir -p /tmp/chain-test
           javac -encoding UTF-8 -d /tmp/chain-test app/src/main/java/ru/devops/interview/LearningChain.java tests/LearningChainTest.java
           java -cp /tmp/chain-test ru.devops.interview.LearningChainTest app/src/main/assets/answers.md
+      - name: Test knowledge quiz bank
+        run: |
+          mkdir -p /tmp/knowledge-test
+          javac -encoding UTF-8 -d /tmp/knowledge-test app/src/main/java/ru/devops/interview/KnowledgeQuiz.java tests/KnowledgeQuizTest.java
+          java -cp /tmp/knowledge-test ru.devops.interview.KnowledgeQuizTest app/src/main/assets/knowledge_quiz.txt app/src/main/assets/questions.md
       - run: gradle --no-daemon :app:assembleDebug
       - uses: actions/upload-artifact@v4
         with:
